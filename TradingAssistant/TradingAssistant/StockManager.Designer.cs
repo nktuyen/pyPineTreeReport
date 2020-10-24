@@ -31,7 +31,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.txtStockID = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.txtMaChungKhoan = new System.Windows.Forms.TextBox();
+            this.txtMaCoPhieu = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.txtTenDoanhNghiep = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -78,17 +78,17 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(91, 13);
             this.label2.TabIndex = 2;
-            this.label2.Text = "Mã chứng khoán:";
+            this.label2.Text = "Mã cổ phiếu:";
             // 
-            // txtMaChungKhoan
+            // txtMaCoPhieu
             // 
-            this.txtMaChungKhoan.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.txtMaChungKhoan.Location = new System.Drawing.Point(140, 43);
-            this.txtMaChungKhoan.MaxLength = 255;
-            this.txtMaChungKhoan.Name = "txtMaChungKhoan";
-            this.txtMaChungKhoan.Size = new System.Drawing.Size(100, 20);
-            this.txtMaChungKhoan.TabIndex = 3;
-            this.txtMaChungKhoan.TextChanged += new System.EventHandler(this.txtMaChungKhoan_TextChanged);
+            this.txtMaCoPhieu.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            this.txtMaCoPhieu.Location = new System.Drawing.Point(140, 43);
+            this.txtMaCoPhieu.MaxLength = 255;
+            this.txtMaCoPhieu.Name = "txtMaCoPhieu";
+            this.txtMaCoPhieu.Size = new System.Drawing.Size(100, 20);
+            this.txtMaCoPhieu.TabIndex = 3;
+            this.txtMaCoPhieu.TextChanged += new System.EventHandler(this.txtMaCoPhieu_TextChanged);
             // 
             // label3
             // 
@@ -262,7 +262,7 @@
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtTenDoanhNghiep);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.txtMaChungKhoan);
+            this.Controls.Add(this.txtMaCoPhieu);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtStockID);
             this.Controls.Add(this.label1);
@@ -287,7 +287,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtStockID;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox txtMaChungKhoan;
+        private System.Windows.Forms.TextBox txtMaCoPhieu;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtTenDoanhNghiep;
         private System.Windows.Forms.Label label4;

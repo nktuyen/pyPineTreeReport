@@ -13,10 +13,10 @@ namespace TradingAssistant
 {
     public partial class StockManager : Form
     {
-        public ChungKhoan Stock { get; set; } = null;
+        public CoPhieu Stock { get; set; } = null;
         private Settings Settings { get; } = Settings.Instance;
         public bool UpdateMode { get; set; } = false;
-        public StockManager(ChungKhoan stock)
+        public StockManager(CoPhieu stock)
         {
             InitializeComponent();
             this.Stock = stock;
@@ -28,7 +28,7 @@ namespace TradingAssistant
             {
                 return false;
             }
-            var cmd = new SQLiteCommand(string.Format("SELECT MaChungKhoan FROM ChungKhoan WHERE MaChungKhoan=\"{0}\"", code.ToUpper()), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("SELECT MaCoPhieu FROM CoPhieu WHERE MaCoPhieu=\"{0}\"", code.ToUpper()), Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
 
             return reader.HasRows;
@@ -36,17 +36,17 @@ namespace TradingAssistant
 
         private bool PreAdd()
         {
-            if (txtMaChungKhoan.TextLength <= 0)
+            if (txtMaCoPhieu.TextLength <= 0)
             {
                 MessageBox.Show("Mã chứng khoáng không được để trống!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtMaChungKhoan.Focus();
+                txtMaCoPhieu.Focus();
                 return false;
             }
 
-            if (IsStockExist(txtMaChungKhoan.Text))
+            if (IsStockExist(txtMaCoPhieu.Text))
             {
-                MessageBox.Show(string.Format("Mã chứng khoán {0} đã tồn tại!\nVui lòng nhập mã khác", txtMaChungKhoan.Text), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtMaChungKhoan.Focus();
+                MessageBox.Show(string.Format("Mã cổ phiếu {0} đã tồn tại!\nVui lòng nhập mã khác", txtMaCoPhieu.Text), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtMaCoPhieu.Focus();
                 return false;
             }
             return true;
@@ -63,11 +63,11 @@ namespace TradingAssistant
             {
                 return;
             }
-            var cmd = new SQLiteCommand(string.Format("INSERT INTO ChungKhoan(MaChungKhoan,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet) VALUES(\"{0}\",\"{1}\",{2},{3},{4},\"{5}\")", txtMaChungKhoan.Text, txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/","")), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet) VALUES(\"{0}\",\"{1}\",{2},{3},{4},\"{5}\")", txtMaCoPhieu.Text, txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/","")), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
             if(rows <= 0)
             {
-                MessageBox.Show("Không thể thêm chứng khoán!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Không thể thêm cổ phiếu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             this.DialogResult = DialogResult.OK;
@@ -85,11 +85,11 @@ namespace TradingAssistant
                 return;
             }
 
-            var cmd = new SQLiteCommand(string.Format("UPDATE ChungKhoan SET TenDoanhNghiep=\"{0}\",SanNiemYet={1},KhoiLuongNiemYet={2},KhoiLuongLuuHanh={3},NgayNiemYet=\"{4}\" WHERE ID={5}", txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/", ""), txtStockID.Text), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("UPDATE CoPhieu SET TenDoanhNghiep=\"{0}\",SanNiemYet={1},KhoiLuongNiemYet={2},KhoiLuongLuuHanh={3},NgayNiemYet=\"{4}\" WHERE ID={5}", txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/", ""), txtStockID.Text), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
             if (rows <= 0)
             {
-                MessageBox.Show("Không thể thêm chứng khoán!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Không thể thêm cổ phiếu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             
@@ -104,14 +104,14 @@ namespace TradingAssistant
             {
                 btnAddStock.Visible = false;
                 btnUpdateStock.Visible = true;
-                this.Text = "Cập nhật thông tin chứng khoán";
+                this.Text = "Cập nhật thông tin cổ phiếu";
                 this.AcceptButton = btnUpdateStock;
 
                 txtStockID.Text = this.Stock.ID.ToString();
                 txtStockID.ForeColor = Color.Black;
 
-                txtMaChungKhoan.Text = Stock.MaChungkhoan;
-                txtMaChungKhoan.ReadOnly = true;
+                txtMaCoPhieu.Text = Stock.MaCoPhieu;
+                txtMaCoPhieu.ReadOnly = true;
 
                 txtTenDoanhNghiep.Text = Stock.TenDoanhNghiep;
 
@@ -129,13 +129,13 @@ namespace TradingAssistant
             {
                 btnAddStock.Visible = true;
                 btnUpdateStock.Visible = false;
-                this.Text = "Thêm chứng khoán";
+                this.Text = "Thêm cổ phiếu";
                 this.AcceptButton = btnAddStock;
 
                 txtStockID.ForeColor = Color.Gray;
                 txtStockID.Text = "Không xác định";
 
-                txtMaChungKhoan.ReadOnly = false;
+                txtMaCoPhieu.ReadOnly = false;
 
                 txtKhoiLuongNiemYet.Maximum = int.MaxValue;
 
@@ -196,7 +196,7 @@ namespace TradingAssistant
             }
         }
 
-        private void txtMaChungKhoan_TextChanged(object sender, EventArgs e)
+        private void txtMaCoPhieu_TextChanged(object sender, EventArgs e)
         {
             btnAddStock.Enabled = btnUpdateStock.Enabled = true;
         }

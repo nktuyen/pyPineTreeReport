@@ -12,6 +12,8 @@ using System.Resources;
 using System.IO;
 using System.Diagnostics;
 using Microsoft.Win32;
+using System.Reflection;
+using Microsoft.Office.Interop.Excel;
 
 namespace TradingAssistant
 {
@@ -23,15 +25,78 @@ namespace TradingAssistant
             Settings = Settings.Instance;
         }
 
+        private Microsoft.Office.Interop.Excel.Application Excel
+        {
+            get
+            {
+                Type officeType = Type.GetTypeFromProgID("Excel.Application");
+                if (officeType == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return (Microsoft.Office.Interop.Excel.Application)Activator.CreateInstance(officeType);
+                }
+            }
+        }
+
         private Settings Settings { get; } = Settings.Instance;
         private ListViewHitTestInfo StockListHitTestInfo { get; set; } = null;
+        private ListViewHitTestInfo PortfolioListHitTestInfo { get; set; } = null;
 
         private string BuildConnectionString(string dbFile)
         {
             return string.Format("Data Source={0}; Mode=ReadWrite", dbFile);
         }
 
-        private void InitExchangesList()
+        private DateTime DateTimeFromString(string sDate)
+        {
+            if (sDate==null || sDate==string.Empty)
+            {
+                return new DateTime();
+            }
+
+            int pos = -1;
+            int year = 0;
+            int month = 0;
+            int day = 0;
+            
+            string[] arrTemp = sDate.Split('/');
+            if (arrTemp.Length > 0)
+            {
+                day = int.Parse(arrTemp[0]);
+            }
+            if (arrTemp.Length > 1)
+            {
+                month = int.Parse(arrTemp[1]);
+            }
+            if (arrTemp.Length > 1)
+            {
+                pos = arrTemp[2].IndexOf(' ');
+                if (pos == -1)
+                    year = int.Parse(arrTemp[2]);
+                else
+                    year = int.Parse(arrTemp[2].Substring(0, pos));
+            }
+
+            return new DateTime(year, month, day);
+        }
+
+        private bool AddBuyTransaction(GiaoDichMua transac)
+        {
+            if(Settings.DBConnection==null||Settings.DBConnection.State!= ConnectionState.Open)
+            {
+                return false;
+            }
+
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO GIaoDichMua(CoPhieu,KhoiLuongMua,Gia,NgayGiaoDich,PhiGiaoDich) VALUES({0},{1},{2},'{3:D2}/{4:D2}/{5:D4}',{6})", transac.CoPhieu, transac.KhoiLuong, transac.Gia, transac.NgayGiaoDich.Day, transac.NgayGiaoDich.Month, transac.NgayGiaoDich.Year, transac.PhiGiaoDich), Settings.DBConnection);
+            int rows = cmd.ExecuteNonQuery();
+
+            return rows > 0;
+        }
+
+        private void LoadExchangesList()
         {
             Settings.DanhSachSanGiaoDich.Clear();
 
@@ -80,7 +145,13 @@ namespace TradingAssistant
             Settings.DanhSachSanGiaoDich.Insert(0, new SanGiaoDich(0, "---"));
         }
 
-        private void InitSystem()
+        private void LoadPortfolio()
+        {
+            portfolioListView.Items.Clear();
+
+        }
+
+        private void LoadSystemRecords()
         {
             if (Settings.System == null)
             {
@@ -93,7 +164,6 @@ namespace TradingAssistant
 
             var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,PhiUngTruocTienBan FROM HeThong", Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
-            int iTmp = 0;
             float fTemp = 0;
             string sTemp = string.Empty;
 
@@ -115,16 +185,47 @@ namespace TradingAssistant
             }
         }
 
-        private void InitStockList()
+        private int GetStockID(string stockCode)
+        {
+            int res = 0;
+            if (Settings.DBConnection == null||Settings.DBConnection.State!= ConnectionState.Open)
+            {
+                return res;
+            }
+
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT ID FROM CoPhieu WHERE MaCoPhieu='{0}'", stockCode), Settings.DBConnection);
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    try
+                    {
+                        res = reader.GetInt32(0);
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                        res = 0;
+                    }
+                    break;
+                }
+            }
+
+            return res;
+        }
+
+        private void LoadStockList()
         {
             if (Settings.System == null)
             {
-                InitSystem();
+                LoadSystemRecords();
             }
 
             if (Settings.DanhSachSanGiaoDich.Count <= 0)
             {
-                InitExchangesList();
+                LoadExchangesList();
             }
             
             stockCodeListView.Items.Clear();
@@ -132,46 +233,53 @@ namespace TradingAssistant
             {
                 return;
             }
-            var cmd = new SQLiteCommand("SELECT * FROM ChungKhoan ORDER BY MaChungKhoan", Settings.DBConnection);
-            SQLiteDataReader reader = cmd.ExecuteReader();
-            int ID = 0;
-            string code = string.Empty;
-            string name = string.Empty;
-            int exchange = 0;
-            int listed = 0;
-            int shared = 0;
-            int year = 0;
-            int month = 0;
-            int day = 0;
-            string temp = string.Empty;
-            while (reader.Read())
+            var cmd = new SQLiteCommand("SELECT * FROM CoPhieu ORDER BY MaCoPhieu", Settings.DBConnection);
+            try
             {
-                ID = reader.GetInt32(0);
-                code = reader.GetString(1);
-                name = reader.GetString(2);
-                exchange = reader.GetInt32(3);
-                listed = reader.GetInt32(4);
-                shared = reader.GetInt32(5);
-                temp = reader.GetString(6);
-                day = int.Parse(temp.Substring(0, 2));
-                month = int.Parse(temp.Substring(2, 2));
-                year = int.Parse(temp.Substring(4, 4));
+                SQLiteDataReader reader = cmd.ExecuteReader();
+                int ID = 0;
+                string code = string.Empty;
+                string name = string.Empty;
+                int exchange = 0;
+                int listed = 0;
+                int shared = 0;
+                int year = 0;
+                int month = 0;
+                int day = 0;
+                string temp = string.Empty;
+                while (reader.Read())
+                {
+                    ID = reader.GetInt32(0);
+                    code = reader.GetString(1);
+                    name = reader.GetString(2);
+                    exchange = reader.GetInt32(3);
+                    listed = reader.GetInt32(4);
+                    shared = reader.GetInt32(5);
+                    temp = reader.GetString(6);
+                    day = int.Parse(temp.Substring(0, 2));
+                    month = int.Parse(temp.Substring(2, 2));
+                    year = int.Parse(temp.Substring(4, 4));
 
-                ChungKhoan stock = new ChungKhoan();
-                stock.ID = ID;
-                stock.MaChungkhoan = code;
-                stock.TenDoanhNghiep = name;
-                stock.SanNiemYet = exchange;
-                stock.KhoiLuongNiemYet = listed;
-                stock.KhoiLuongLuuHanh = shared;
-                stock.NgayNiemYet = new DateTime(year, month, day);
+                    CoPhieu stock = new CoPhieu();
+                    stock.ID = ID;
+                    stock.MaCoPhieu = code;
+                    stock.TenDoanhNghiep = name;
+                    stock.SanNiemYet = exchange;
+                    stock.KhoiLuongNiemYet = listed;
+                    stock.KhoiLuongLuuHanh = shared;
+                    stock.NgayNiemYet = new DateTime(year, month, day);
 
-                ListViewItem item = stockCodeListView.Items.Add(ID.ToString());
-                item.Tag = stock;
-                item.SubItems.Add(code);
-                item.SubItems.Add(name);
-                item.SubItems.Add(Settings.DanhSachSanGiaoDich[stock.SanNiemYet].MaSan);
-                item.SubItems.Add(string.Format("{0:D2}/{1:D2}/{2:D4}", stock.NgayNiemYet.Day, stock.NgayNiemYet.Month, stock.NgayNiemYet.Year));
+                    ListViewItem item = stockCodeListView.Items.Add(ID.ToString());
+                    item.Tag = stock;
+                    item.SubItems.Add(code);
+                    item.SubItems.Add(name);
+                    item.SubItems.Add(Settings.DanhSachSanGiaoDich[stock.SanNiemYet].MaSan);
+                    item.SubItems.Add(string.Format("{0:D2}/{1:D2}/{2:D4}", stock.NgayNiemYet.Day, stock.NgayNiemYet.Month, stock.NgayNiemYet.Year));
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.Print(ex.Message);
             }
         }
 
@@ -228,7 +336,7 @@ namespace TradingAssistant
                     Settings.DBConnection = conn;
                     closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
 
-                    InitStockList();
+                    LoadStockList();
                 }
                 catch(Exception ex)
                 {
@@ -277,7 +385,7 @@ namespace TradingAssistant
             Settings.DataFile = dlg.FileName;
             Settings.DBConnection = conn;
             closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
-            InitStockList();
+            LoadStockList();
         }
 
         private void mnuExit_Click(object sender, EventArgs e)
@@ -304,7 +412,7 @@ namespace TradingAssistant
             }
             else
             {
-                InitStockList();
+                LoadStockList();
             }
         }
 
@@ -336,14 +444,16 @@ namespace TradingAssistant
                     }
                     Settings.DBConnection = conn;
                     closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
-                    InitExchangesList();
-                    InitStockList();
+                    LoadExchangesList();
+                    LoadStockList();
                 }
                 else
                 {
                     Settings.DataFile = string.Empty;
                 }
             }
+
+            importFromExcelMenuItem.Enabled = (Excel != null);
         }
 
         private void stockCodeListView_MouseDown(object sender, MouseEventArgs e)
@@ -382,7 +492,7 @@ namespace TradingAssistant
                 ListViewItem selItem = stockCodeListView.SelectedItems[0];
                 if (null != selItem.Tag)
                 {
-                    ChungKhoan stock = selItem.Tag as ChungKhoan;
+                    CoPhieu stock = selItem.Tag as CoPhieu;
                     if (null != stock)
                     {
                         StockManager form = new StockManager(stock);
@@ -392,7 +502,7 @@ namespace TradingAssistant
                         }
                         else
                         {
-                            InitStockList();
+                            LoadStockList();
                         }
                     }
                 }
@@ -408,21 +518,21 @@ namespace TradingAssistant
         {
             if (stockCodeListView.SelectedItems.Count <= 0)
             {
-                MessageBox.Show("Chọn một chứng khoán đề mua!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Chọn một cổ phiếu đề mua!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             ListViewItem selItem = stockCodeListView.SelectedItems[0];
             if (null == selItem || null == selItem.Tag)
             {
-                MessageBox.Show("Chọn một chứng khoán đề mua!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Chọn một cổ phiếu đề mua!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            ChungKhoan selStock = selItem.Tag as ChungKhoan;
+            CoPhieu selStock = selItem.Tag as CoPhieu;
             if (null == selStock)
             {
-                MessageBox.Show("Chọn một chứng khoán đề mua!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Chọn một cổ phiếu đề mua!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -446,38 +556,38 @@ namespace TradingAssistant
         {
             if (stockCodeListView.SelectedItems.Count <= 0)
             {
-                MessageBox.Show("Chọn một chứng khoán đề xóa!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Chọn một cổ phiếu đề xóa!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             ListViewItem selItem = stockCodeListView.SelectedItems[0];
             if(null==selItem || null == selItem.Tag)
             {
-                MessageBox.Show("Chọn một chứng khoán đề xóa!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Chọn một cổ phiếu đề xóa!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            ChungKhoan selStock = selItem.Tag as ChungKhoan;
+            CoPhieu selStock = selItem.Tag as CoPhieu;
             if (null == selStock)
             {
-                MessageBox.Show("Chọn một chứng khoán đề xóa!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Chọn một cổ phiếu đề xóa!", "Chú ý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if(MessageBox.Show(string.Format("Bạn chắc chắn muốn xóa chứng khoán có mã \"{0}\"?", selStock.MaChungkhoan), "Xóa chứng khoán", MessageBoxButtons.YesNo, MessageBoxIcon.Question)!= DialogResult.Yes)
+            if(MessageBox.Show(string.Format("Bạn chắc chắn muốn xóa cổ phiếu có mã \"{0}\"?", selStock.MaCoPhieu), "Xóa cổ phiếu", MessageBoxButtons.YesNo, MessageBoxIcon.Question)!= DialogResult.Yes)
             {
                 return;
             }
 
-            var cmd = new SQLiteCommand(string.Format("DELETE FROM ChungKhoan WHERE ID={0}", selStock.ID), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("DELETE FROM CoPhieu WHERE ID={0}", selStock.ID), Settings.DBConnection);
             if (cmd.ExecuteNonQuery() <= 0)
             {
-                MessageBox.Show(string.Format("Xóa chứng khoán có mã \"{0}\" thất bại!", selStock.MaChungkhoan), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(string.Format("Xóa cổ phiếu có mã \"{0}\" thất bại!", selStock.MaCoPhieu), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             else
             {
-                InitStockList();
+                LoadStockList();
             }
         }
 
@@ -493,7 +603,246 @@ namespace TradingAssistant
                 closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
                 Settings.DBConnection = null;
             }
-            InitStockList();
+            LoadStockList();
+        }
+
+        private void stockCodeListView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+            else
+                e.Effect = DragDropEffects.None;
+        }
+
+        private void stockCodeListView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            Settings.DataFile = files[0];
+            if (Settings.DataFile != null && Settings.DataFile != string.Empty)
+            {
+                if (File.Exists(Settings.DataFile))
+                {
+                    SQLiteConnection conn = new SQLiteConnection(BuildConnectionString(Settings.DataFile));
+                    if (null == conn)
+                    {
+                        MessageBox.Show("Không thể mở tệp dữ liệu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    try
+                    {
+                        conn.Open();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                        MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    if (Settings.DBConnection != null)
+                    {
+                        Settings.DBConnection.Close();
+                    }
+                    Settings.DBConnection = conn;
+                    closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
+                    LoadExchangesList();
+                    LoadStockList();
+                }
+                else
+                {
+                    Settings.DataFile = string.Empty;
+                }
+            }
+        }
+
+        private void portfolioListView_MouseDown(object sender, MouseEventArgs e)
+        {
+            if(e.Button== MouseButtons.Right)
+            {
+                PortfolioListHitTestInfo = portfolioListView.HitTest(e.X, e.Y);
+                if(PortfolioListHitTestInfo.Location == ListViewHitTestLocations.Label)
+                {
+                    portfolioListView.ContextMenuStrip = contextMenuStrip4;
+                }
+                else if(PortfolioListHitTestInfo.Location == ListViewHitTestLocations.None)
+                {
+                    portfolioListView.ContextMenuStrip = contextMenuStrip3;
+                }
+            }
+        }
+
+        private void importFromExcelMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = "Chọn tệp tin";
+            dlg.Filter = "Tất cả các tệp tin(*.*)|*.*|Tệp tin Excel(*.xlsx)|*.xlsx";
+            dlg.FilterIndex = 1;
+            dlg.CheckPathExists = true;
+            dlg.CheckFileExists = true;
+            dlg.ShowReadOnly = true;
+
+            if(dlg.ShowDialog()!= DialogResult.OK)
+            {
+                return;
+            }
+
+            string excelFiles = dlg.FileName;
+            Workbook wb = null;
+            try
+            {
+                wb = Excel.Workbooks.Open(excelFiles);
+            }
+            catch(Exception ex)
+            {
+                Debug.Print(ex.Message);
+                MessageBox.Show(ex.Message, string.Format("Lỗi 0x{0:X8}", ex.HResult), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            backgroundWorker1.RunWorkerAsync(wb);
+
+        }
+
+        private void detailMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void buyMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void sellMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private string DynamicToString(dynamic val)
+        {
+            object obj = (object)val;
+            if (obj.GetType().Equals(typeof(System.DateTime)))
+            {
+                DateTime dt = (DateTime)val;
+                return dt.ToString();
+            }
+            else if (obj.GetType().Equals(typeof(System.Double)))
+            {
+                System.Double dt = (System.Double)val;
+                return dt.ToString();
+            }
+            else if (obj.GetType().Equals(typeof(System.String)))
+            {
+                System.String dt = (System.String)val;
+                return dt.ToString();
+            }
+            else if (obj.GetType().Equals(typeof(int)))
+            {
+                int n = (int)val;
+                return n.ToString();
+            }
+
+
+            return string.Empty;
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            backgroundWorker1.ReportProgress(0);
+
+            Workbook wb = e.Argument as Workbook;
+            int row = 3;
+            Range cellDate = null;
+            Range cellType = null;
+            Range cellCode = null;
+            Range cellCount = null;
+            Range cellPrice = null;
+            string sDate = string.Empty;
+            string sType = string.Empty;
+            string sCode = string.Empty;
+            string sCount = string.Empty;
+            string sPrice = string.Empty;                       
+
+            foreach (Worksheet ws in wb.Sheets)
+            {
+                while (true)
+                {
+                    cellDate = ws.Cells[row, 1];
+                    cellType = ws.Cells[row, 2];
+                    cellCode = ws.Cells[row, 3];
+                    cellCount = ws.Cells[row, 6];
+                    cellPrice = ws.Cells[row, 7];
+
+                    sDate = string.Empty;
+                    sType = string.Empty;
+                    sCode = string.Empty;
+                    sCount = string.Empty;
+                    sPrice = string.Empty;
+
+                    if (cellDate.Value==null && cellType.Value == null && cellCode.Value == null && cellCount.Value == null && cellPrice.Value == null)
+                    {
+                        break;
+                    }
+
+
+                    if (cellDate.Value != null)
+                        sDate = DynamicToString(cellDate.Value);
+                    if (cellType.Value != null)
+                        sType = cellType.Value;
+                    if (cellCode.Value != null)
+                        sCode = cellCode.Value;
+                    if (cellCount.Value != null)
+                        sCount = cellCount.Value;
+                    if (cellPrice.Value != null)
+                        sPrice = cellPrice.Value;
+
+                    Debug.Print(string.Format("{0}\t{1}\t{2}\t{3}\t{4}", sDate, sType, sCode, sCount, sPrice));
+
+                    if (sType.ToLower() == "Mua".ToLower())
+                    {
+                        GiaoDichMua giaoDichMua = new GiaoDichMua();
+                        giaoDichMua.CoPhieu = GetStockID(sCode.Trim());
+                        giaoDichMua.Gia = (int)float.Parse(sPrice.Replace(".","").Trim());
+                        giaoDichMua.KhoiLuong = int.Parse(sCount.Replace(",", "").Trim());
+                        giaoDichMua.NgayGiaoDich = DateTimeFromString(sDate.Trim());
+                        giaoDichMua.PhiGiaoDich = (int)System.Math.Round((float)giaoDichMua.KhoiLuong * (float)giaoDichMua.Gia * Settings.System.PhiGiaoDichMua);
+
+                        if (giaoDichMua.KhoiLuong > 0 && giaoDichMua.Gia != 0)
+                        {
+                            if (!AddBuyTransaction(giaoDichMua))
+                            {
+                                Debug.Print(giaoDichMua.ToString());
+                            }
+                        }
+                    }
+
+                    row++;
+                }
+            }
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (e.ProgressPercentage == 0)
+            {
+                progressBar1.Value = 0;
+                progressBar1.Maximum = 100;
+                progressBar1.Minimum = 0;
+                progressBar1.Style = ProgressBarStyle.Marquee;
+                progressBar1.Visible = true;
+            }
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            progressBar1.Visible = false;
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (null != Excel)
+            {
+                Excel.Application.Quit();
+            }
         }
     }
 }

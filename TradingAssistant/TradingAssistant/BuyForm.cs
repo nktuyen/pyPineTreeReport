@@ -7,21 +7,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SQLite;
 
 namespace TradingAssistant
 {
     public partial class BuyForm : Form
     {
         private Settings Settings { get; } = Settings.Instance;
-        public ChungKhoan Stock { get; set; } = null;
+        public CoPhieu Stock { get; set; } = null;
         private bool AutoCalc { get; set; } = true;
-        public BuyForm(ChungKhoan stock=null)
+        private GiaoDichMua GiaoDich { get; set; } = null;
+        
+        public BuyForm(CoPhieu stock=null)
         {
             InitializeComponent();
             Stock = stock;
         }
         private bool PreBuy()
         {
+            if (txtKhoiLuongMua.Value <= 0)
+            {
+                MessageBox.Show("Khối lượng không hợp lệ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtKhoiLuongMua.Focus();
+                return false;
+            }
+            GiaoDich.KhoiLuong = (int)txtKhoiLuongMua.Value;
+
+
+            if (txtGiaMua.TextLength <= 0)
+            {
+                MessageBox.Show("Giá không hợp lệ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtGiaMua.Focus();
+                return false;
+            }
+            GiaoDich.Gia = int.Parse(txtGiaMua.Text);
+            if (GiaoDich.Gia <= 0)
+            {
+                MessageBox.Show("Giá không hợp lệ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtGiaMua.Focus();
+                return false;
+            }
+
+            GiaoDich.PhiGiaoDich = int.Parse(txtPhiGiaoDich.Text);
+            
             return true;
         }
 
@@ -33,9 +61,30 @@ namespace TradingAssistant
 
             if(Stock != null)
             {
-                txtMaChungKhoan.Text = Stock.MaChungkhoan;
+                txtMaCoPhieu.Text = Stock.MaCoPhieu;
+                toolTip1.InitialDelay = 0;
+                toolTip1.ShowAlways = true;
+                toolTip1.IsBalloon = false;
+
+                GiaoDich = new GiaoDichMua();
+                GiaoDich.CoPhieu = Stock.ID;
+                GiaoDich.NgayGiaoDich = DateTime.Today;
+                dateTimePicker1.Value = GiaoDich.NgayGiaoDich;
+
+                if (Stock.TenDoanhNghiep != string.Empty)
+                {
+                    toolTip1.SetToolTip(txtMaCoPhieu, Stock.TenDoanhNghiep);
+                }
+                else
+                {
+                    toolTip1.SetToolTip(txtMaCoPhieu, Stock.MaCoPhieu);
+                }
 
                 btnConfirm.Enabled = true;
+                txtKhoiLuongMua.Enabled = true;
+                txtGiaMua.Enabled = true;
+                txtPhiGiaoDich.Enabled = true;
+                dateTimePicker1.Enabled = true;
             }
         }
 
@@ -51,6 +100,15 @@ namespace TradingAssistant
         {
             if (!PreBuy())
             {
+                return;
+            }
+
+            DateTime dt = DateTime.Today;
+            string sTime = string.Format("{0:D2}/{1:D2}/{2:D4}", dt.Day, dt.Month, dt.Year);
+            var cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichMua(CoPhieu,KhoiLuongMua,Gia,PhiGiaoDich,NgayGiaoDich) VALUES({0},{1},{2},{3},\"{4}\")", Stock.ID, txtKhoiLuongMua.Value, txtGiaMua.Text, txtPhiGiaoDich.Text, sTime), Settings.DBConnection);
+            if(cmd.ExecuteNonQuery() <= 0)
+            {
+                MessageBox.Show(string.Format("Mua cổ phiếu \"{0}\" thất bại!", txtMaCoPhieu.Text), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -97,6 +155,13 @@ namespace TradingAssistant
             {
                 e.Handled = true;
             }
+        }
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        {
+            GiaoDich.NgayGiaoDich = dateTimePicker1.Value;
+            string sDateTime = string.Format("{0:D2}/{1:D2}/{2:D4}", GiaoDich.NgayGiaoDich.Day, GiaoDich.NgayGiaoDich.Month, GiaoDich.NgayGiaoDich.Year);
+            txtThoiGianGiaoDich.Text = sDateTime;
         }
     }
 }

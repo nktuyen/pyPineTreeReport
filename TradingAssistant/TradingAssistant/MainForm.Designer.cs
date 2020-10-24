@@ -43,11 +43,19 @@
             this.colCompany = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colExchange = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.investCatagoryTagPage = new System.Windows.Forms.TabPage();
+            this.portfolioTagPage = new System.Windows.Forms.TabPage();
+            this.portfolioListView = new System.Windows.Forms.ListView();
+            this.colCoPhieu = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colKhoiLuongMua = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colTongTienMua = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colKhoiLuongDaBan = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colTongTienBan = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colLaiLo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.tệpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuNewFile = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuOpenFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeDataFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.settingsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -62,18 +70,29 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.editStockMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteStockMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closeDataFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStrip3 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.importFromExcelMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStrip4 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.detailMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.buyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sellMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tabControl1.SuspendLayout();
             this.stockTabPage.SuspendLayout();
+            this.portfolioTagPage.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
+            this.contextMenuStrip3.SuspendLayout();
+            this.contextMenuStrip4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.stockTabPage);
-            this.tabControl1.Controls.Add(this.investCatagoryTagPage);
+            this.tabControl1.Controls.Add(this.portfolioTagPage);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
@@ -95,7 +114,7 @@
             this.stockTabPage.Padding = new System.Windows.Forms.Padding(3);
             this.stockTabPage.Size = new System.Drawing.Size(776, 371);
             this.stockTabPage.TabIndex = 0;
-            this.stockTabPage.Text = "Chứng khoán";
+            this.stockTabPage.Text = "Cổ phiếu";
             this.stockTabPage.UseVisualStyleBackColor = true;
             // 
             // button2
@@ -145,9 +164,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 12);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(91, 13);
+            this.label1.Size = new System.Drawing.Size(69, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Mã chứng khoán:";
+            this.label1.Text = "Mã cổ phiếu:";
             // 
             // textBox1
             // 
@@ -158,6 +177,7 @@
             // 
             // stockCodeListView
             // 
+            this.stockCodeListView.AllowDrop = true;
             this.stockCodeListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -172,10 +192,13 @@
             this.stockCodeListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.stockCodeListView.Location = new System.Drawing.Point(3, 36);
             this.stockCodeListView.Name = "stockCodeListView";
+            this.stockCodeListView.ShowItemToolTips = true;
             this.stockCodeListView.Size = new System.Drawing.Size(770, 332);
             this.stockCodeListView.TabIndex = 0;
             this.stockCodeListView.UseCompatibleStateImageBehavior = false;
             this.stockCodeListView.View = System.Windows.Forms.View.Details;
+            this.stockCodeListView.DragDrop += new System.Windows.Forms.DragEventHandler(this.stockCodeListView_DragDrop);
+            this.stockCodeListView.DragEnter += new System.Windows.Forms.DragEventHandler(this.stockCodeListView_DragEnter);
             this.stockCodeListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.stockCodeListView_MouseDoubleClick);
             this.stockCodeListView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.stockCodeListView_MouseDown);
             this.stockCodeListView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.stockCodeListView_MouseUp);
@@ -204,14 +227,68 @@
             this.colDate.Text = "Ngày niêm yết";
             this.colDate.Width = 120;
             // 
-            // investCatagoryTagPage
+            // portfolioTagPage
             // 
-            this.investCatagoryTagPage.Location = new System.Drawing.Point(4, 22);
-            this.investCatagoryTagPage.Name = "investCatagoryTagPage";
-            this.investCatagoryTagPage.Size = new System.Drawing.Size(776, 371);
-            this.investCatagoryTagPage.TabIndex = 1;
-            this.investCatagoryTagPage.Text = "Danh mục đầu tư";
-            this.investCatagoryTagPage.UseVisualStyleBackColor = true;
+            this.portfolioTagPage.Controls.Add(this.progressBar1);
+            this.portfolioTagPage.Controls.Add(this.portfolioListView);
+            this.portfolioTagPage.Location = new System.Drawing.Point(4, 22);
+            this.portfolioTagPage.Name = "portfolioTagPage";
+            this.portfolioTagPage.Size = new System.Drawing.Size(776, 371);
+            this.portfolioTagPage.TabIndex = 1;
+            this.portfolioTagPage.Text = "Danh mục đầu tư";
+            this.portfolioTagPage.UseVisualStyleBackColor = true;
+            // 
+            // portfolioListView
+            // 
+            this.portfolioListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colCoPhieu,
+            this.colKhoiLuongMua,
+            this.colTongTienMua,
+            this.colKhoiLuongDaBan,
+            this.colTongTienBan,
+            this.colLaiLo});
+            this.portfolioListView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.portfolioListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.portfolioListView.FullRowSelect = true;
+            this.portfolioListView.GridLines = true;
+            this.portfolioListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.portfolioListView.Location = new System.Drawing.Point(0, 0);
+            this.portfolioListView.Name = "portfolioListView";
+            this.portfolioListView.ShowItemToolTips = true;
+            this.portfolioListView.Size = new System.Drawing.Size(776, 371);
+            this.portfolioListView.TabIndex = 0;
+            this.portfolioListView.UseCompatibleStateImageBehavior = false;
+            this.portfolioListView.View = System.Windows.Forms.View.Details;
+            this.portfolioListView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.portfolioListView_MouseDown);
+            // 
+            // colCoPhieu
+            // 
+            this.colCoPhieu.Text = "Cổ phiếu";
+            // 
+            // colKhoiLuongMua
+            // 
+            this.colKhoiLuongMua.Text = "Khối lượng mua";
+            this.colKhoiLuongMua.Width = 120;
+            // 
+            // colTongTienMua
+            // 
+            this.colTongTienMua.Text = "Giá trị mua";
+            this.colTongTienMua.Width = 120;
+            // 
+            // colKhoiLuongDaBan
+            // 
+            this.colKhoiLuongDaBan.Text = "Khối lượng đã bán";
+            this.colKhoiLuongDaBan.Width = 120;
+            // 
+            // colTongTienBan
+            // 
+            this.colTongTienBan.Text = "Giá trị đã bán";
+            this.colTongTienBan.Width = 120;
+            // 
+            // colLaiLo
+            // 
+            this.colLaiLo.Text = "Lãi/Lỗ";
+            this.colLaiLo.Width = 120;
             // 
             // menuStrip1
             // 
@@ -253,6 +330,15 @@
             this.mnuOpenFile.Size = new System.Drawing.Size(219, 22);
             this.mnuOpenFile.Text = "Chọn tệp dữ liệu";
             this.mnuOpenFile.Click += new System.EventHandler(this.mnuOpenFile_Click);
+            // 
+            // closeDataFileMenuItem
+            // 
+            this.closeDataFileMenuItem.Enabled = false;
+            this.closeDataFileMenuItem.Name = "closeDataFileMenuItem";
+            this.closeDataFileMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.closeDataFileMenuItem.Size = new System.Drawing.Size(219, 22);
+            this.closeDataFileMenuItem.Text = "Đóng tệp dữ liệu";
+            this.closeDataFileMenuItem.Click += new System.EventHandler(this.closeDataFileMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -309,13 +395,13 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addStockMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(178, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(154, 26);
             // 
             // addStockMenuItem
             // 
             this.addStockMenuItem.Name = "addStockMenuItem";
-            this.addStockMenuItem.Size = new System.Drawing.Size(177, 22);
-            this.addStockMenuItem.Text = "Thêm chứng khoán";
+            this.addStockMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.addStockMenuItem.Text = "Thêm cổ phiếu";
             this.addStockMenuItem.Click += new System.EventHandler(this.addStockMenuItem_Click);
             // 
             // contextMenuStrip2
@@ -354,14 +440,72 @@
             this.deleteStockMenuItem.Text = "Xóa";
             this.deleteStockMenuItem.Click += new System.EventHandler(this.deleteStockMenuItem_Click);
             // 
-            // closeDataFileMenuItem
+            // contextMenuStrip3
             // 
-            this.closeDataFileMenuItem.Enabled = false;
-            this.closeDataFileMenuItem.Name = "closeDataFileMenuItem";
-            this.closeDataFileMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.closeDataFileMenuItem.Size = new System.Drawing.Size(219, 22);
-            this.closeDataFileMenuItem.Text = "Đóng tệp dữ liệu";
-            this.closeDataFileMenuItem.Click += new System.EventHandler(this.closeDataFileMenuItem_Click);
+            this.contextMenuStrip3.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.importFromExcelMenuItem});
+            this.contextMenuStrip3.Name = "contextMenuStrip3";
+            this.contextMenuStrip3.Size = new System.Drawing.Size(224, 26);
+            // 
+            // importFromExcelMenuItem
+            // 
+            this.importFromExcelMenuItem.Name = "importFromExcelMenuItem";
+            this.importFromExcelMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.importFromExcelMenuItem.Text = "Nhập dữ liệu từ tệp tin Excel";
+            this.importFromExcelMenuItem.Click += new System.EventHandler(this.importFromExcelMenuItem_Click);
+            // 
+            // contextMenuStrip4
+            // 
+            this.contextMenuStrip4.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.detailMenuItem,
+            this.toolStripSeparator3,
+            this.buyMenuItem,
+            this.sellMenuItem});
+            this.contextMenuStrip4.Name = "contextMenuStrip4";
+            this.contextMenuStrip4.Size = new System.Drawing.Size(113, 76);
+            // 
+            // detailMenuItem
+            // 
+            this.detailMenuItem.Name = "detailMenuItem";
+            this.detailMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.detailMenuItem.Text = "Chi tiết";
+            this.detailMenuItem.Click += new System.EventHandler(this.detailMenuItem_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(109, 6);
+            // 
+            // buyMenuItem
+            // 
+            this.buyMenuItem.Name = "buyMenuItem";
+            this.buyMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.buyMenuItem.Text = "Mua";
+            this.buyMenuItem.Click += new System.EventHandler(this.buyMenuItem_Click);
+            // 
+            // sellMenuItem
+            // 
+            this.sellMenuItem.Name = "sellMenuItem";
+            this.sellMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.sellMenuItem.Text = "Bán";
+            this.sellMenuItem.Click += new System.EventHandler(this.sellMenuItem_Click);
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.WorkerSupportsCancellation = true;
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.progressBar1.Location = new System.Drawing.Point(0, 361);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(776, 10);
+            this.progressBar1.TabIndex = 1;
+            this.progressBar1.Visible = false;
             // 
             // MainForm
             // 
@@ -375,14 +519,18 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "TradingAssistant";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.tabControl1.ResumeLayout(false);
             this.stockTabPage.ResumeLayout(false);
             this.stockTabPage.PerformLayout();
+            this.portfolioTagPage.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
             this.contextMenuStrip2.ResumeLayout(false);
+            this.contextMenuStrip3.ResumeLayout(false);
+            this.contextMenuStrip4.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -413,7 +561,7 @@
         private System.Windows.Forms.ToolStripMenuItem mnuHelp;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem addStockMenuItem;
-        private System.Windows.Forms.TabPage investCatagoryTagPage;
+        private System.Windows.Forms.TabPage portfolioTagPage;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
         private System.Windows.Forms.ToolStripMenuItem editStockMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deleteStockMenuItem;
@@ -424,6 +572,22 @@
         private System.Windows.Forms.ToolStripMenuItem buyStockMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem closeDataFileMenuItem;
+        private System.Windows.Forms.ListView portfolioListView;
+        private System.Windows.Forms.ColumnHeader colCoPhieu;
+        private System.Windows.Forms.ColumnHeader colKhoiLuongMua;
+        private System.Windows.Forms.ColumnHeader colTongTienMua;
+        private System.Windows.Forms.ColumnHeader colKhoiLuongDaBan;
+        private System.Windows.Forms.ColumnHeader colTongTienBan;
+        private System.Windows.Forms.ColumnHeader colLaiLo;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip3;
+        private System.Windows.Forms.ToolStripMenuItem importFromExcelMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip4;
+        private System.Windows.Forms.ToolStripMenuItem detailMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem buyMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sellMenuItem;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 
