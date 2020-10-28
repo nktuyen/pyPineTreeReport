@@ -44,6 +44,7 @@ namespace TradingAssistant
         private Settings Settings { get; } = Settings.Instance;
         private ListViewHitTestInfo StockListHitTestInfo { get; set; } = null;
         private ListViewHitTestInfo PortfolioListHitTestInfo { get; set; } = null;
+        private bool ReloadStockListAfterImport { get; set; } = false;
 
         private string BuildConnectionString(string dbFile)
         {
@@ -90,7 +91,7 @@ namespace TradingAssistant
                 return false;
             }
 
-            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO GIaoDichMua(CoPhieu,KhoiLuongMua,Gia,NgayGiaoDich,PhiGiaoDich) VALUES({0},{1},{2},'{3:D2}/{4:D2}/{5:D4}',{6})", transac.CoPhieu, transac.KhoiLuong, transac.Gia, transac.NgayGiaoDich.Day, transac.NgayGiaoDich.Month, transac.NgayGiaoDich.Year, transac.PhiGiaoDich), Settings.DBConnection);
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichMua(CoPhieu,KhoiLuongMua,GiaMua,ThoiGianMua,PhiGiaoDichMua) VALUES({0},{1},{2},'{3:D2}/{4:D2}/{5:D4}-{6:D2}:{7:D2}:{8:D2}',{9})", transac.CoPhieu, transac.KhoiLuongMua, transac.GiaMua, transac.ThoiGianMua.Day, transac.ThoiGianMua.Month, transac.ThoiGianMua.Year, transac.ThoiGianMua.Hour, transac.ThoiGianMua.Minute, transac.ThoiGianMua.Second, transac.PhiGiaoDichMua), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
 
             return rows > 0;
@@ -132,7 +133,7 @@ namespace TradingAssistant
                         website = string.Empty;
                     }
 
-                    SanGiaoDich exch = new SanGiaoDich();
+                    SanGiaMuaoDich exch = new SanGiaMuaoDich();
                     exch.ID = ID;
                     exch.MaSan = code;
                     exch.TenSan = name;
@@ -142,13 +143,27 @@ namespace TradingAssistant
                 }
             }
 
-            Settings.DanhSachSanGiaoDich.Insert(0, new SanGiaoDich(0, "---"));
+            Settings.DanhSachSanGiaoDich.Insert(0, new SanGiaMuaoDich(0, "---"));
         }
 
         private void LoadPortfolio()
         {
             portfolioListView.Items.Clear();
+            if(Settings.DBConnection==null||Settings.DBConnection.State!= ConnectionState.Open)
+            {
+                return;
+            }
 
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT DISTINCT CoPhieu FROM GiaoDichMua"), Settings.DBConnection);
+            SQLiteDataReader reader = cmd.ExecuteReader();
+            int ID = 0;
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    ID = reader.GetInt32(0);
+                }
+            }
         }
 
         private void LoadSystemRecords()
@@ -162,7 +177,7 @@ namespace TradingAssistant
                 return;
             }
 
-            var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,PhiUngTruocTienBan FROM HeThong", Settings.DBConnection);
+            var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,PhiUngTruocTienBan,ThueTrenMoiGiaoDich FROM HeThong", Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
             float fTemp = 0;
             string sTemp = string.Empty;
@@ -180,9 +195,29 @@ namespace TradingAssistant
                     fTemp = reader.GetFloat(2);
                     Settings.System.PhiUngTruocTienBan = fTemp;
 
+                    fTemp = reader.GetFloat(3);
+                    Settings.System.ThueTrenMoiGiaoDich = fTemp;
+
                     break;
                 }
             }
+        }
+
+        private int AddStock(string stockCode, string companyName = "")
+        {
+            int res = 0;
+            if (Settings.DBConnection == null || Settings.DBConnection.State != ConnectionState.Open)
+            {
+                return res;
+            }
+
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep)VALUES(\'{0}\',\'{1}\')", stockCode, companyName), Settings.DBConnection);
+            if (cmd.ExecuteNonQuery() > 0)
+            {
+                res = GetStockID(stockCode);
+            }
+
+            return res;
         }
 
         private int GetStockID(string stockCode)
@@ -233,8 +268,8 @@ namespace TradingAssistant
             {
                 return;
             }
-            var cmd = new SQLiteCommand("SELECT * FROM CoPhieu ORDER BY MaCoPhieu", Settings.DBConnection);
-            try
+            var cmd = new SQLiteCommand("SELECT ID,MaCophieu,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet FROM CoPhieu ORDER BY MaCoPhieu", Settings.DBConnection);
+            //try
             {
                 SQLiteDataReader reader = cmd.ExecuteReader();
                 int ID = 0;
@@ -256,9 +291,13 @@ namespace TradingAssistant
                     listed = reader.GetInt32(4);
                     shared = reader.GetInt32(5);
                     temp = reader.GetString(6);
-                    day = int.Parse(temp.Substring(0, 2));
-                    month = int.Parse(temp.Substring(2, 2));
-                    year = int.Parse(temp.Substring(4, 4));
+
+                    if (temp != string.Empty)
+                    {
+                        day = int.Parse(temp.Substring(0, 2));
+                        month = int.Parse(temp.Substring(2, 2));
+                        year = int.Parse(temp.Substring(4, 4));
+                    }
 
                     CoPhieu stock = new CoPhieu();
                     stock.ID = ID;
@@ -269,6 +308,7 @@ namespace TradingAssistant
                     stock.KhoiLuongLuuHanh = shared;
                     stock.NgayNiemYet = new DateTime(year, month, day);
 
+                    ID = stockCodeListView.Items.Count + 1;
                     ListViewItem item = stockCodeListView.Items.Add(ID.ToString());
                     item.Tag = stock;
                     item.SubItems.Add(code);
@@ -277,10 +317,10 @@ namespace TradingAssistant
                     item.SubItems.Add(string.Format("{0:D2}/{1:D2}/{2:D4}", stock.NgayNiemYet.Day, stock.NgayNiemYet.Month, stock.NgayNiemYet.Year));
                 }
             }
-            catch(Exception ex)
+            /*catch(Exception ex)
             {
                 Debug.Print(ex.Message);
-            }
+            }*/
         }
 
         private void mnuNewFile_Click(object sender, EventArgs e)
@@ -750,35 +790,39 @@ namespace TradingAssistant
             backgroundWorker1.ReportProgress(0);
 
             Workbook wb = e.Argument as Workbook;
-            int row = 3;
+            int row = 11;
             Range cellDate = null;
             Range cellType = null;
             Range cellCode = null;
             Range cellCount = null;
             Range cellPrice = null;
+            Range cellCommand = null;
             string sDate = string.Empty;
             string sType = string.Empty;
             string sCode = string.Empty;
             string sCount = string.Empty;
-            string sPrice = string.Empty;                       
+            string sPrice = string.Empty;
+            string sCommand = string.Empty;
 
             foreach (Worksheet ws in wb.Sheets)
             {
                 while (true)
                 {
-                    cellDate = ws.Cells[row, 1];
-                    cellType = ws.Cells[row, 2];
-                    cellCode = ws.Cells[row, 3];
-                    cellCount = ws.Cells[row, 6];
-                    cellPrice = ws.Cells[row, 7];
+                    cellDate = ws.Cells[row, 2];
+                    cellType = ws.Cells[row, 3];
+                    cellCode = ws.Cells[row, 4];
+                    cellCount = ws.Cells[row, 7];
+                    cellPrice = ws.Cells[row, 8];
+                    cellCommand = ws.Cells[row, 13];
 
                     sDate = string.Empty;
                     sType = string.Empty;
                     sCode = string.Empty;
                     sCount = string.Empty;
                     sPrice = string.Empty;
+                    sCommand = string.Empty;
 
-                    if (cellDate.Value==null && cellType.Value == null && cellCode.Value == null && cellCount.Value == null && cellPrice.Value == null)
+                    if (cellDate.Value == null && cellType.Value == null && cellCode.Value == null && cellCount.Value == null && cellPrice.Value == null && cellCommand.Value == null)
                     {
                         break;
                     }
@@ -794,24 +838,38 @@ namespace TradingAssistant
                         sCount = cellCount.Value;
                     if (cellPrice.Value != null)
                         sPrice = cellPrice.Value;
+                    if (cellCommand.Validation != null)
+                        sCommand = cellCommand.Value;
 
-                    Debug.Print(string.Format("{0}\t{1}\t{2}\t{3}\t{4}", sDate, sType, sCode, sCount, sPrice));
+                    Debug.Print(string.Format("Ngày GD:{0}\tLoại GD:{1}\tMã CK:{2}\tKL:{3}\tGiá:{4}\tLệnh:{5}", sDate, sType, sCode, sCount, sPrice, sCommand));
 
                     if (sType.ToLower() == "Mua".ToLower())
                     {
-                        GiaoDichMua giaoDichMua = new GiaoDichMua();
+                        GiaoDichMua  giaoDichMua = new GiaoDichMua();
                         giaoDichMua.CoPhieu = GetStockID(sCode.Trim());
-                        giaoDichMua.Gia = (int)float.Parse(sPrice.Replace(".","").Trim());
-                        giaoDichMua.KhoiLuong = int.Parse(sCount.Replace(",", "").Trim());
-                        giaoDichMua.NgayGiaoDich = DateTimeFromString(sDate.Trim());
-                        giaoDichMua.PhiGiaoDich = (int)System.Math.Round((float)giaoDichMua.KhoiLuong * (float)giaoDichMua.Gia * Settings.System.PhiGiaoDichMua);
-
-                        if (giaoDichMua.KhoiLuong > 0 && giaoDichMua.Gia != 0)
+                        if (giaoDichMua.CoPhieu == 0)
                         {
+                            giaoDichMua.CoPhieu = AddStock(sCode.Trim());
+                            ReloadStockListAfterImport = true;
+                        }
+
+                        giaoDichMua.GiaMua = (int)float.Parse(sPrice.Replace(".","").Trim());
+                        giaoDichMua.KhoiLuongMua = int.Parse(sCount.Replace(",", "").Trim());
+
+                        if (giaoDichMua.KhoiLuongMua > 0 && giaoDichMua.GiaMua != 0)
+                        {
+                            giaoDichMua.ThoiGianMua = DateTimeFromString(sDate.Trim());
+                            giaoDichMua.PhiGiaoDichMua = (int)System.Math.Round((float)giaoDichMua.KhoiLuongMua * (float)giaoDichMua.GiaMua * Settings.System.PhiGiaoDichMua);
+
                             if (!AddBuyTransaction(giaoDichMua))
                             {
                                 Debug.Print(giaoDichMua.ToString());
                             }
+                        }
+                        else
+                        {
+                            row++;
+                            continue;
                         }
                     }
 
@@ -835,6 +893,10 @@ namespace TradingAssistant
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             progressBar1.Visible = false;
+            if (ReloadStockListAfterImport)
+            {
+                LoadStockList();
+            }
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)

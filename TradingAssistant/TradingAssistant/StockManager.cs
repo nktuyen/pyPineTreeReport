@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SQLite;
+using System.Diagnostics;
 
 namespace TradingAssistant
 {
@@ -163,7 +164,7 @@ namespace TradingAssistant
 
         private void btnEditExchange_Click(object sender, EventArgs e)
         {
-            SanGiaoDich exch = cbbSanNiemYet.SelectedItem as SanGiaoDich;
+            SanGiaMuaoDich exch = cbbSanNiemYet.SelectedItem as SanGiaMuaoDich;
             ExchangesManager form = new ExchangesManager(exch);
 
             if (form.ShowDialog() != DialogResult.OK)
@@ -183,7 +184,7 @@ namespace TradingAssistant
 
         private void cbbSanNiemYet_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SanGiaoDich exch = cbbSanNiemYet.SelectedItem as SanGiaoDich;
+            SanGiaMuaoDich exch = cbbSanNiemYet.SelectedItem as SanGiaMuaoDich;
             btnDelExchange.Enabled = btnEditExchange.Enabled = (exch != null && exch.ID > 0);
             btnAddStock.Enabled = btnUpdateStock.Enabled = true;
         }

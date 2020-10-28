@@ -13,9 +13,9 @@ namespace TradingAssistant
     public partial class ExchangesManager : Form
     {
         private Settings Settings { get; } = Settings.Instance;
-        private SanGiaoDich Exchange { get; set; } = null;
+        private SanGiaMuaoDich Exchange { get; set; } = null;
 
-        public ExchangesManager(SanGiaoDich exch)
+        public ExchangesManager(SanGiaMuaoDich exch)
         {
             InitializeComponent();
             Exchange = exch;
@@ -25,7 +25,7 @@ namespace TradingAssistant
         {
             if (txtMaSan.TextLength <= 0)
             {
-                MessageBox.Show("Mã sàn giao dịch không được để trống!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Mã sàn GiaMuao dịch không được để trống!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtMaSan.Focus();
                 return false;
             }
@@ -50,7 +50,7 @@ namespace TradingAssistant
         {
             if(Exchange != null)
             {
-                this.Text = "Cập nhật thông tin sàn giao dịch";
+                this.Text = "Cập nhật thông tin sàn GiaMuao dịch";
                 btnUpdateExch.Visible = true;
                 btnAddExch.Visible = false;
                 this.AcceptButton = btnUpdateExch;
@@ -67,7 +67,7 @@ namespace TradingAssistant
             }
             else
             {
-                this.Text = "Thêm sàn giao dịch";
+                this.Text = "Thêm sàn GiaMuao dịch";
                 btnUpdateExch.Visible = false;
                 btnAddExch.Visible = true;
                 AcceptButton = btnAddExch;

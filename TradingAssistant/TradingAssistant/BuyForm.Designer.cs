@@ -36,12 +36,12 @@
             this.label3 = new System.Windows.Forms.Label();
             this.txtGiaMua = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.txtPhiGiaoDich = new System.Windows.Forms.TextBox();
+            this.txtPhiGiaMuaoDich = new System.Windows.Forms.TextBox();
             this.btnConfirm = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.label5 = new System.Windows.Forms.Label();
-            this.txtThoiGianGiaoDich = new System.Windows.Forms.TextBox();
+            this.txtThoiGianMuanGiaMuaoDich = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.txtKhoiLuongMua)).BeginInit();
             this.SuspendLayout();
             // 
@@ -117,17 +117,17 @@
             this.label4.TabIndex = 6;
             this.label4.Text = "Phí:";
             // 
-            // txtPhiGiaoDich
+            // txtPhiGiaMuaoDich
             // 
-            this.txtPhiGiaoDich.Enabled = false;
-            this.txtPhiGiaoDich.Location = new System.Drawing.Point(78, 102);
-            this.txtPhiGiaoDich.Name = "txtPhiGiaoDich";
-            this.txtPhiGiaoDich.Size = new System.Drawing.Size(100, 20);
-            this.txtPhiGiaoDich.TabIndex = 7;
-            this.txtPhiGiaoDich.Text = "0";
-            this.txtPhiGiaoDich.TextChanged += new System.EventHandler(this.txtPhiGiaoDich_TextChanged);
-            this.txtPhiGiaoDich.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtPhiGiaoDich_KeyDown);
-            this.txtPhiGiaoDich.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPhiGiaoDich_KeyPress);
+            this.txtPhiGiaMuaoDich.Enabled = false;
+            this.txtPhiGiaMuaoDich.Location = new System.Drawing.Point(78, 102);
+            this.txtPhiGiaMuaoDich.Name = "txtPhiGiaMuaoDich";
+            this.txtPhiGiaMuaoDich.Size = new System.Drawing.Size(100, 20);
+            this.txtPhiGiaMuaoDich.TabIndex = 7;
+            this.txtPhiGiaMuaoDich.Text = "0";
+            this.txtPhiGiaMuaoDich.TextChanged += new System.EventHandler(this.txtPhiGiaMuaoDich_TextChanged);
+            this.txtPhiGiaMuaoDich.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtPhiGiaMuaoDich_KeyDown);
+            this.txtPhiGiaMuaoDich.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPhiGiaMuaoDich_KeyPress);
             // 
             // btnConfirm
             // 
@@ -156,15 +156,15 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(54, 13);
             this.label5.TabIndex = 10;
-            this.label5.Text = "Thời gian:";
+            this.label5.Text = "Thời GiaMuan:";
             // 
-            // txtThoiGianGiaoDich
+            // txtThoiGianMuanGiaMuaoDich
             // 
-            this.txtThoiGianGiaoDich.Location = new System.Drawing.Point(78, 133);
-            this.txtThoiGianGiaoDich.Name = "txtThoiGianGiaoDich";
-            this.txtThoiGianGiaoDich.ReadOnly = true;
-            this.txtThoiGianGiaoDich.Size = new System.Drawing.Size(100, 20);
-            this.txtThoiGianGiaoDich.TabIndex = 11;
+            this.txtThoiGianMuanGiaMuaoDich.Location = new System.Drawing.Point(78, 133);
+            this.txtThoiGianMuanGiaMuaoDich.Name = "txtThoiGianMuanGiaMuaoDich";
+            this.txtThoiGianMuanGiaMuaoDich.ReadOnly = true;
+            this.txtThoiGianMuanGiaMuaoDich.Size = new System.Drawing.Size(100, 20);
+            this.txtThoiGianMuanGiaMuaoDich.TabIndex = 11;
             // 
             // BuyForm
             // 
@@ -172,11 +172,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(231, 201);
-            this.Controls.Add(this.txtThoiGianGiaoDich);
+            this.Controls.Add(this.txtThoiGianMuanGiaMuaoDich);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.btnConfirm);
-            this.Controls.Add(this.txtPhiGiaoDich);
+            this.Controls.Add(this.txtPhiGiaMuaoDich);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtGiaMua);
             this.Controls.Add(this.label3);
@@ -207,11 +207,11 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtGiaMua;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox txtPhiGiaoDich;
+        private System.Windows.Forms.TextBox txtPhiGiaMuaoDich;
         private System.Windows.Forms.Button btnConfirm;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox txtThoiGianGiaoDich;
+        private System.Windows.Forms.TextBox txtThoiGianMuanGiaMuaoDich;
     }
 }

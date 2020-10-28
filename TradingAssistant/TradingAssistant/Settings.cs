@@ -14,6 +14,7 @@ namespace TradingAssistant
         public float PhiGiaoDichMua { get; set; } = 0;
         public float PhiGiaoDichBan { get; set; } = 0;
         public float PhiUngTruocTienBan { get; set; } = 0;
+        public float ThueTrenMoiGiaoDich { get; set; } = 0;
     }
 
     class Settings
@@ -37,7 +38,7 @@ namespace TradingAssistant
 
         public HeThong System { get; set; } = null;
         public string DataFile { get; set; } = string.Empty;
-        public List<SanGiaoDich> DanhSachSanGiaoDich { get; } = new List<SanGiaoDich>();
+        public List<SanGiaMuaoDich> DanhSachSanGiaoDich { get; } = new List<SanGiaMuaoDich>();
         public SQLiteConnection DBConnection { get; set; } = null;
         private Settings()
         {

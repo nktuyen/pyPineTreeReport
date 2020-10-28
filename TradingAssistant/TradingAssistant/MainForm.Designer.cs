@@ -48,7 +48,7 @@
             this.colCoPhieu = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colKhoiLuongMua = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colTongTienMua = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colKhoiLuongDaBan = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colKhoiLuongMuaDaBan = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colTongTienBan = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colLaiLo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -244,7 +244,7 @@
             this.colCoPhieu,
             this.colKhoiLuongMua,
             this.colTongTienMua,
-            this.colKhoiLuongDaBan,
+            this.colKhoiLuongMuaDaBan,
             this.colTongTienBan,
             this.colLaiLo});
             this.portfolioListView.Cursor = System.Windows.Forms.Cursors.Default;
@@ -275,10 +275,10 @@
             this.colTongTienMua.Text = "Giá trị mua";
             this.colTongTienMua.Width = 120;
             // 
-            // colKhoiLuongDaBan
+            // colKhoiLuongMuaDaBan
             // 
-            this.colKhoiLuongDaBan.Text = "Khối lượng đã bán";
-            this.colKhoiLuongDaBan.Width = 120;
+            this.colKhoiLuongMuaDaBan.Text = "Khối lượng đã bán";
+            this.colKhoiLuongMuaDaBan.Width = 120;
             // 
             // colTongTienBan
             // 
@@ -576,7 +576,7 @@
         private System.Windows.Forms.ColumnHeader colCoPhieu;
         private System.Windows.Forms.ColumnHeader colKhoiLuongMua;
         private System.Windows.Forms.ColumnHeader colTongTienMua;
-        private System.Windows.Forms.ColumnHeader colKhoiLuongDaBan;
+        private System.Windows.Forms.ColumnHeader colKhoiLuongMuaDaBan;
         private System.Windows.Forms.ColumnHeader colTongTienBan;
         private System.Windows.Forms.ColumnHeader colLaiLo;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip3;

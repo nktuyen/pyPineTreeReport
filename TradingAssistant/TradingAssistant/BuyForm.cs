@@ -16,7 +16,7 @@ namespace TradingAssistant
         private Settings Settings { get; } = Settings.Instance;
         public CoPhieu Stock { get; set; } = null;
         private bool AutoCalc { get; set; } = true;
-        private GiaoDichMua GiaoDich { get; set; } = null;
+        private GiaoDichMua GiaMuaoDich { get; set; } = null;
         
         public BuyForm(CoPhieu stock=null)
         {
@@ -31,7 +31,7 @@ namespace TradingAssistant
                 txtKhoiLuongMua.Focus();
                 return false;
             }
-            GiaoDich.KhoiLuong = (int)txtKhoiLuongMua.Value;
+            GiaMuaoDich.KhoiLuongMua = (int)txtKhoiLuongMua.Value;
 
 
             if (txtGiaMua.TextLength <= 0)
@@ -40,15 +40,15 @@ namespace TradingAssistant
                 txtGiaMua.Focus();
                 return false;
             }
-            GiaoDich.Gia = int.Parse(txtGiaMua.Text);
-            if (GiaoDich.Gia <= 0)
+            GiaMuaoDich.GiaMua = int.Parse(txtGiaMua.Text);
+            if (GiaMuaoDich.GiaMua <= 0)
             {
                 MessageBox.Show("Giá không hợp lệ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtGiaMua.Focus();
                 return false;
             }
 
-            GiaoDich.PhiGiaoDich = int.Parse(txtPhiGiaoDich.Text);
+            GiaMuaoDich.PhiGiaoDichMua = int.Parse(txtPhiGiaMuaoDich.Text);
             
             return true;
         }
@@ -66,10 +66,10 @@ namespace TradingAssistant
                 toolTip1.ShowAlways = true;
                 toolTip1.IsBalloon = false;
 
-                GiaoDich = new GiaoDichMua();
-                GiaoDich.CoPhieu = Stock.ID;
-                GiaoDich.NgayGiaoDich = DateTime.Today;
-                dateTimePicker1.Value = GiaoDich.NgayGiaoDich;
+                GiaMuaoDich = new GiaoDichMua();
+                GiaMuaoDich.CoPhieu = Stock.ID;
+                GiaMuaoDich.ThoiGianMua = DateTime.Today;
+                dateTimePicker1.Value = GiaMuaoDich.ThoiGianMua;
 
                 if (Stock.TenDoanhNghiep != string.Empty)
                 {
@@ -83,7 +83,7 @@ namespace TradingAssistant
                 btnConfirm.Enabled = true;
                 txtKhoiLuongMua.Enabled = true;
                 txtGiaMua.Enabled = true;
-                txtPhiGiaoDich.Enabled = true;
+                txtPhiGiaMuaoDich.Enabled = true;
                 dateTimePicker1.Enabled = true;
             }
         }
@@ -105,7 +105,7 @@ namespace TradingAssistant
 
             DateTime dt = DateTime.Today;
             string sTime = string.Format("{0:D2}/{1:D2}/{2:D4}", dt.Day, dt.Month, dt.Year);
-            var cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichMua(CoPhieu,KhoiLuongMua,Gia,PhiGiaoDich,NgayGiaoDich) VALUES({0},{1},{2},{3},\"{4}\")", Stock.ID, txtKhoiLuongMua.Value, txtGiaMua.Text, txtPhiGiaoDich.Text, sTime), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichMua(CoPhieu,KhoiLuongMua,GiaMua,PhiGiaoDichMua,ThoiGianMua) VALUES({0},{1},{2},{3},\"{4}\")", Stock.ID, txtKhoiLuongMua.Value, txtGiaMua.Text, txtPhiGiaMuaoDich.Text, sTime), Settings.DBConnection);
             if(cmd.ExecuteNonQuery() <= 0)
             {
                 MessageBox.Show(string.Format("Mua cổ phiếu \"{0}\" thất bại!", txtMaCoPhieu.Text), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -120,11 +120,11 @@ namespace TradingAssistant
             if (txtGiaMua.TextLength>0 && txtKhoiLuongMua.Value>0 && AutoCalc)
             {
                 int iKL = (int)txtKhoiLuongMua.Value;
-                int iGia = int.Parse(txtGiaMua.Text);
-                float fAmount = (float)iKL * (float)iGia;
+                int iGiaMua = int.Parse(txtGiaMua.Text);
+                float fAmount = (float)iKL * (float)iGiaMua;
                 float fFee = fAmount * Settings.System.PhiGiaoDichMua/100f;
 
-                txtPhiGiaoDich.Text = Math.Round(fFee).ToString();
+                txtPhiGiaMuaoDich.Text = Math.Round(fFee).ToString();
             }
         }
 
@@ -136,20 +136,20 @@ namespace TradingAssistant
             }
         }
 
-        private void txtPhiGiaoDich_KeyDown(object sender, KeyEventArgs e)
+        private void txtPhiGiaMuaoDich_KeyDown(object sender, KeyEventArgs e)
         {
             AutoCalc = false;
         }
 
-        private void txtPhiGiaoDich_TextChanged(object sender, EventArgs e)
+        private void txtPhiGiaMuaoDich_TextChanged(object sender, EventArgs e)
         {
-            if (txtPhiGiaoDich.TextLength <= 0)
+            if (txtPhiGiaMuaoDich.TextLength <= 0)
             {
                 AutoCalc = true;
             }
         }
 
-        private void txtPhiGiaoDich_KeyPress(object sender, KeyPressEventArgs e)
+        private void txtPhiGiaMuaoDich_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != 8)
             {
@@ -159,9 +159,9 @@ namespace TradingAssistant
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
-            GiaoDich.NgayGiaoDich = dateTimePicker1.Value;
-            string sDateTime = string.Format("{0:D2}/{1:D2}/{2:D4}", GiaoDich.NgayGiaoDich.Day, GiaoDich.NgayGiaoDich.Month, GiaoDich.NgayGiaoDich.Year);
-            txtThoiGianGiaoDich.Text = sDateTime;
+            GiaMuaoDich.ThoiGianMua = dateTimePicker1.Value;
+            string sDateTime = string.Format("{0:D2}/{1:D2}/{2:D4}", GiaMuaoDich.ThoiGianMua.Day, GiaMuaoDich.ThoiGianMua.Month, GiaMuaoDich.ThoiGianMua.Year);
+            txtThoiGianMuanGiaMuaoDich.Text = sDateTime;
         }
     }
 }
