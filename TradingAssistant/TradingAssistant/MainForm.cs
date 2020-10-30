@@ -290,13 +290,44 @@ namespace TradingAssistant
                     exchange = reader.GetInt32(3);
                     listed = reader.GetInt32(4);
                     shared = reader.GetInt32(5);
-                    temp = reader.GetString(6);
+                    try
+                    {
+                        temp = reader.GetString(6);
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                        temp = "1/1/1970";
+                    }
 
                     if (temp != string.Empty)
                     {
-                        day = int.Parse(temp.Substring(0, 2));
-                        month = int.Parse(temp.Substring(2, 2));
-                        year = int.Parse(temp.Substring(4, 4));
+                        string[] numbers = temp.Split('/');
+                        try
+                        {
+                            if (numbers.Length > 0)
+                                day = int.Parse(numbers[0].Trim());
+                            else
+                                day = 1;
+                            if (numbers.Length > 1)
+                                month = int.Parse(numbers[1].Trim());
+                            else
+                                month = 1;
+                            if (numbers.Length > 2)
+                                year = int.Parse(numbers[2].Trim());
+                            else
+                                year = 1970;
+                        }
+                        catch(Exception ex)
+                        {
+                            Debug.Print(ex.Message);
+                        }
+                    }
+                    else
+                    {
+                        day = 1;
+                        month = 1;
+                        year = 1970;
                     }
 
                     CoPhieu stock = new CoPhieu();
@@ -306,7 +337,14 @@ namespace TradingAssistant
                     stock.SanNiemYet = exchange;
                     stock.KhoiLuongNiemYet = listed;
                     stock.KhoiLuongLuuHanh = shared;
-                    stock.NgayNiemYet = new DateTime(year, month, day);
+                    try
+                    {
+                        stock.NgayNiemYet = new DateTime(year, month, day);
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                    }
 
                     ID = stockCodeListView.Items.Count + 1;
                     ListViewItem item = stockCodeListView.Items.Add(ID.ToString());

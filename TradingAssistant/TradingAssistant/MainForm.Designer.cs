@@ -44,6 +44,7 @@
             this.colExchange = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.portfolioTagPage = new System.Windows.Forms.TabPage();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.portfolioListView = new System.Windows.Forms.ListView();
             this.colCoPhieu = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colKhoiLuongMua = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -78,7 +79,6 @@
             this.buyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sellMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tabControl1.SuspendLayout();
             this.stockTabPage.SuspendLayout();
             this.portfolioTagPage.SuspendLayout();
@@ -206,7 +206,7 @@
             // colNo
             // 
             this.colNo.Text = "#";
-            this.colNo.Width = 30;
+            this.colNo.Width = 36;
             // 
             // colCode
             // 
@@ -215,17 +215,17 @@
             // colCompany
             // 
             this.colCompany.Text = "Tên doanh nghiệp";
-            this.colCompany.Width = 400;
+            this.colCompany.Width = 460;
             // 
             // colExchange
             // 
             this.colExchange.Text = "Sàn niêm yết";
-            this.colExchange.Width = 120;
+            this.colExchange.Width = 80;
             // 
             // colDate
             // 
             this.colDate.Text = "Ngày niêm yết";
-            this.colDate.Width = 120;
+            this.colDate.Width = 100;
             // 
             // portfolioTagPage
             // 
@@ -237,6 +237,15 @@
             this.portfolioTagPage.TabIndex = 1;
             this.portfolioTagPage.Text = "Danh mục đầu tư";
             this.portfolioTagPage.UseVisualStyleBackColor = true;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.progressBar1.Location = new System.Drawing.Point(0, 361);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(776, 10);
+            this.progressBar1.TabIndex = 1;
+            this.progressBar1.Visible = false;
             // 
             // portfolioListView
             // 
@@ -497,15 +506,6 @@
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar1.Location = new System.Drawing.Point(0, 361);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(776, 10);
-            this.progressBar1.TabIndex = 1;
-            this.progressBar1.Visible = false;
             // 
             // MainForm
             // 

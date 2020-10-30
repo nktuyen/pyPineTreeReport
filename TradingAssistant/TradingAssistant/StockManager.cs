@@ -64,7 +64,7 @@ namespace TradingAssistant
             {
                 return;
             }
-            var cmd = new SQLiteCommand(string.Format("INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet) VALUES(\"{0}\",\"{1}\",{2},{3},{4},\"{5}\")", txtMaCoPhieu.Text, txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/","")), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet) VALUES(\"{0}\",\"{1}\",{2},{3},{4},\"{5}\")", txtMaCoPhieu.Text, txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
             if(rows <= 0)
             {
