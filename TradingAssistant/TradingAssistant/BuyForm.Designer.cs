@@ -116,6 +116,7 @@
             this.label4.Size = new System.Drawing.Size(27, 13);
             this.label4.TabIndex = 6;
             this.label4.Text = "Phí:";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // txtPhiGiaMuaoDich
             // 
@@ -156,7 +157,7 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(54, 13);
             this.label5.TabIndex = 10;
-            this.label5.Text = "Thời GiaMuan:";
+            this.label5.Text = "Thời gian:";
             // 
             // txtThoiGianMuanGiaMuaoDich
             // 

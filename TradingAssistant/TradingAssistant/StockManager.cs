@@ -29,7 +29,7 @@ namespace TradingAssistant
             {
                 return false;
             }
-            var cmd = new SQLiteCommand(string.Format("SELECT MaCoPhieu FROM CoPhieu WHERE MaCoPhieu=\"{0}\"", code.ToUpper()), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("SELECT MaCoPhieu FROM CoPhieu WHERE MaCoPhieu='{0}'", code.ToUpper()), Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
 
             return reader.HasRows;
@@ -64,7 +64,7 @@ namespace TradingAssistant
             {
                 return;
             }
-            var cmd = new SQLiteCommand(string.Format("INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet) VALUES(\"{0}\",\"{1}\",{2},{3},{4},\"{5}\")", txtMaCoPhieu.Text, txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet,KhoiLuongNiemYet,KhoiLuongLuuHanh,NgayNiemYet) VALUES('{0}','{1}',{2},{3},{4},'{5}')", txtMaCoPhieu.Text, txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
             if(rows <= 0)
             {
@@ -86,7 +86,7 @@ namespace TradingAssistant
                 return;
             }
 
-            var cmd = new SQLiteCommand(string.Format("UPDATE CoPhieu SET TenDoanhNghiep=\"{0}\",SanNiemYet={1},KhoiLuongNiemYet={2},KhoiLuongLuuHanh={3},NgayNiemYet=\"{4}\" WHERE ID={5}", txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/", ""), txtStockID.Text), Settings.DBConnection);
+            var cmd = new SQLiteCommand(string.Format("UPDATE CoPhieu SET TenDoanhNghiep='{0}',SanNiemYet={1},KhoiLuongNiemYet={2},KhoiLuongLuuHanh={3},NgayNiemYet='{4}' WHERE ID={5}", txtTenDoanhNghiep.Text, cbbSanNiemYet.SelectedIndex, txtKhoiLuongNiemYet.Value, txtKhoiLuongLuuHanh.Value, txtNgayNiemYet.Text.Replace("/", ""), txtStockID.Text), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
             if (rows <= 0)
             {

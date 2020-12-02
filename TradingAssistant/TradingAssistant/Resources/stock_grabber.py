@@ -1,3 +1,5 @@
+from io import StringIO
+from optparse import HelpFormatter
 import sys
 import os
 import json
@@ -13,6 +15,7 @@ if __name__ == "__main__":
     opt: optparse.OptionParser = optparse.OptionParser('%prog exchange')
     opt.add_option('-s', '--start', help='Start index', default=1)
     opt.add_option('-c', '--count', help='Number of items', default=None)
+    opt.add_option('-d', '--database', help='Database file', default='Stock.db')
     options,arguments = opt.parse_args()
 
     if len(arguments) != 1:
@@ -55,12 +58,22 @@ if __name__ == "__main__":
     if count <= 0:
         print(f'Number of items must greater than 0')
         sys.exit(6)
+
+    db: str = options.database
+    if not isinstance(db, str):
+        print(f'Invalid database file.')
+        sys.exit(7)
+
+    if not os.path.exists(db):
+        print(f'Database file is not exist.')
+        sys.exit(8)
     
     conn: sqlite3.Connection = None
     try:
-        conn = sqlite3.connect('Stock.db')
-    except:
-        sys.exit(3)
+        conn = sqlite3.connect(db)
+    except Exception as ex:
+        print(f'Exception:{ex}')
+        sys.exit(9)
     
     grabber: Grabber = None
     if exch.lower() =='hose':

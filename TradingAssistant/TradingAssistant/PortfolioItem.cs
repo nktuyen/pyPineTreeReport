@@ -8,25 +8,42 @@ namespace TradingAssistant
 {
     class PortfolioItem
     {
+        private int _lailo = 0;
+        private readonly List<GiaoDichMua> _danhsachGiaoDichMua = null;
         public string MaCoPhieu { get; set; } = string.Empty;
         public int KhoiLuongMua { get; set; } = 0;
-        public int GiaMuaTriMua { get; set; } = 0;
-        public int KhoiLuongMuaBan { get; set; } = 0;
-        public int GiaMuaTriBan { get; set; } = 0;
-        public int LaiLo { get; set; } = 0;
-        public List<GiaoDichMua> DanhSachGiaoDichMua { get; set; } = new List<GiaoDichMua>();
-        public void Calc()
+        public int GiaTriMua { get; set; } = 0;
+        public int KhoiLuongBan { get; set; } = 0;
+        public int GiaTriBan { get; set; } = 0;
+        public bool Updated { get; set; } = false;
+        public bool DaBanHet { get; set; } = false;
+        public int LaiLo
         {
-            if (MaCoPhieu == null || MaCoPhieu == string.Empty)
+            get
             {
-                KhoiLuongMua = 0;
-                GiaMuaTriMua = 0;
-                KhoiLuongMuaBan = 0;
-                GiaMuaTriBan = 0;
-                LaiLo = 0;
-                DanhSachGiaoDichMua.Clear();
-                return;
+                if (Updated) // Can phai tinh lai lo
+                {
+                    DaBanHet = false;
+                    if (KhoiLuongBan > 0)
+                    {
+                        _lailo = GiaTriBan - GiaTriMua;
+                        if (KhoiLuongBan == KhoiLuongMua)
+                        {
+                            DaBanHet = true;
+                        }
+                    }
+                    else
+                        _lailo = 0;
+                }
+                return _lailo;
             }
+        }
+
+        public List<GiaoDichMua> DanhsachGiaoDichMua { get { return _danhsachGiaoDichMua; } }
+
+        public PortfolioItem()
+        {
+            _danhsachGiaoDichMua = new List<GiaoDichMua>();
         }
     }
 }

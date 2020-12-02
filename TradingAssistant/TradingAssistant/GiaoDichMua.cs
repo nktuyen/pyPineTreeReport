@@ -15,5 +15,21 @@ namespace TradingAssistant
         public string LoaiLenh { get; set; } = string.Empty;
         public DateTime ThoiGianMua { get; set; } = DateTime.Today;
         public int PhiGiaoDichMua { get; set; } = 0;
+
+        public GiaoDichMua()
+        {
+
+        }
+
+        public GiaoDichMua(int id, int cophieu, int khoiluong, int gia, string lenh, DateTime thoigian, int phigiaodich = 0)
+        {
+            ID = id;
+            CoPhieu = cophieu;
+            KhoiLuongMua = khoiluong;
+            GiaMua = gia;
+            LoaiLenh = lenh;
+            ThoiGianMua = thoigian;
+            PhiGiaoDichMua = phigiaodich;
+        }
     }
 }

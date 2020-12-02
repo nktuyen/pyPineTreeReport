@@ -93,7 +93,7 @@ class HoseGrabber(grabber.Grabber):
             if isinstance(cur, sqlite3.Cursor):
                 stock_id: int = grabber.Grabber.get_stock_id_by_name(self._conn, stock)
                 if stock_id == 0:
-                    cur.execute(f'INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet)VALUES("{stock}","{company}",{exch})')
+                    cur.execute(f'INSERT INTO CoPhieu(MaCoPhieu,TenDoanhNghiep,SanNiemYet,NgayNiemYet)VALUES("{stock}","{company}",{exch},"")')
                 else:
                     cur.execute(f'UPDATE CoPhieu SET TenDoanhNghiep="{company}",SanNiemYet={exch} WHERE ID={stock_id}')
                 self._conn.commit()

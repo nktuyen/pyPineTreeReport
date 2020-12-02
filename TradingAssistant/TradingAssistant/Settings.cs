@@ -9,12 +9,32 @@ using System.Data.SQLite;
 
 namespace TradingAssistant
 {
-    class HeThong
+    public class HeThong
     {
         public float PhiGiaoDichMua { get; set; } = 0;
         public float PhiGiaoDichBan { get; set; } = 0;
         public float PhiUngTruocTienBan { get; set; } = 0;
         public float ThueTrenMoiGiaoDich { get; set; } = 0;
+        public bool BaoGomPhiGiaoDichMua { get; set; } = false;
+        public bool BaoGomPhiGiaoDichBan { get; set; } = false;
+        public bool BaoGomThueThuNhap { get; set; } = false;
+
+        public HeThong()
+        {
+
+        }
+
+        public HeThong Clone()
+        {
+            HeThong sys = new HeThong();
+            sys.BaoGomPhiGiaoDichBan = this.BaoGomPhiGiaoDichBan;
+            sys.BaoGomPhiGiaoDichMua = this.BaoGomPhiGiaoDichMua;
+            sys.BaoGomThueThuNhap = this.BaoGomThueThuNhap;
+            sys.PhiGiaoDichBan = this.PhiGiaoDichBan;
+            sys.PhiGiaoDichMua = this.PhiGiaoDichMua;
+            sys.ThueTrenMoiGiaoDich = this.ThueTrenMoiGiaoDich;
+            return sys;
+        }
     }
 
     class Settings
@@ -52,7 +72,7 @@ namespace TradingAssistant
             }
             catch(Exception ex)
             {
-                Debug.Print(ex.Message);
+                Utils.DebugPrint(ex.Message);
                 RegistryKey = null;
             }
 

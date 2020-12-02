@@ -190,7 +190,9 @@
             this.stockCodeListView.FullRowSelect = true;
             this.stockCodeListView.GridLines = true;
             this.stockCodeListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.stockCodeListView.HideSelection = false;
             this.stockCodeListView.Location = new System.Drawing.Point(3, 36);
+            this.stockCodeListView.MultiSelect = false;
             this.stockCodeListView.Name = "stockCodeListView";
             this.stockCodeListView.ShowItemToolTips = true;
             this.stockCodeListView.Size = new System.Drawing.Size(770, 332);
@@ -261,43 +263,52 @@
             this.portfolioListView.FullRowSelect = true;
             this.portfolioListView.GridLines = true;
             this.portfolioListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.portfolioListView.HideSelection = false;
             this.portfolioListView.Location = new System.Drawing.Point(0, 0);
+            this.portfolioListView.MultiSelect = false;
             this.portfolioListView.Name = "portfolioListView";
             this.portfolioListView.ShowItemToolTips = true;
             this.portfolioListView.Size = new System.Drawing.Size(776, 371);
             this.portfolioListView.TabIndex = 0;
             this.portfolioListView.UseCompatibleStateImageBehavior = false;
             this.portfolioListView.View = System.Windows.Forms.View.Details;
+            this.portfolioListView.SelectedIndexChanged += new System.EventHandler(this.portfolioListView_SelectedIndexChanged);
             this.portfolioListView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.portfolioListView_MouseDown);
             // 
             // colCoPhieu
             // 
-            this.colCoPhieu.Text = "Cổ phiếu";
+            this.colCoPhieu.Text = "Mã CP";
+            this.colCoPhieu.Width = 48;
             // 
             // colKhoiLuongMua
             // 
-            this.colKhoiLuongMua.Text = "Khối lượng mua";
-            this.colKhoiLuongMua.Width = 120;
+            this.colKhoiLuongMua.Text = "Khối lượng mua (CP)";
+            this.colKhoiLuongMua.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.colKhoiLuongMua.Width = 140;
             // 
             // colTongTienMua
             // 
-            this.colTongTienMua.Text = "Giá trị mua";
-            this.colTongTienMua.Width = 120;
+            this.colTongTienMua.Text = "Giá trị mua (VND)";
+            this.colTongTienMua.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.colTongTienMua.Width = 140;
             // 
             // colKhoiLuongMuaDaBan
             // 
-            this.colKhoiLuongMuaDaBan.Text = "Khối lượng đã bán";
-            this.colKhoiLuongMuaDaBan.Width = 120;
+            this.colKhoiLuongMuaDaBan.Text = "Khối lượng đã bán (CP)";
+            this.colKhoiLuongMuaDaBan.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.colKhoiLuongMuaDaBan.Width = 140;
             // 
             // colTongTienBan
             // 
-            this.colTongTienBan.Text = "Giá trị đã bán";
-            this.colTongTienBan.Width = 120;
+            this.colTongTienBan.Text = "Giá trị đã bán (VND)";
+            this.colTongTienBan.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.colTongTienBan.Width = 140;
             // 
             // colLaiLo
             // 
-            this.colLaiLo.Text = "Lãi/Lỗ";
-            this.colLaiLo.Width = 120;
+            this.colLaiLo.Text = "Lãi/Lỗ (VND)";
+            this.colLaiLo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.colLaiLo.Width = 140;
             // 
             // menuStrip1
             // 
@@ -471,31 +482,31 @@
             this.buyMenuItem,
             this.sellMenuItem});
             this.contextMenuStrip4.Name = "contextMenuStrip4";
-            this.contextMenuStrip4.Size = new System.Drawing.Size(113, 76);
+            this.contextMenuStrip4.Size = new System.Drawing.Size(130, 76);
             // 
             // detailMenuItem
             // 
             this.detailMenuItem.Name = "detailMenuItem";
-            this.detailMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.detailMenuItem.Size = new System.Drawing.Size(129, 22);
             this.detailMenuItem.Text = "Chi tiết";
             this.detailMenuItem.Click += new System.EventHandler(this.detailMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(109, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(126, 6);
             // 
             // buyMenuItem
             // 
             this.buyMenuItem.Name = "buyMenuItem";
-            this.buyMenuItem.Size = new System.Drawing.Size(112, 22);
-            this.buyMenuItem.Text = "Mua";
+            this.buyMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.buyMenuItem.Text = "Mua thêm";
             this.buyMenuItem.Click += new System.EventHandler(this.buyMenuItem_Click);
             // 
             // sellMenuItem
             // 
             this.sellMenuItem.Name = "sellMenuItem";
-            this.sellMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.sellMenuItem.Size = new System.Drawing.Size(129, 22);
             this.sellMenuItem.Text = "Bán";
             this.sellMenuItem.Click += new System.EventHandler(this.sellMenuItem_Click);
             // 

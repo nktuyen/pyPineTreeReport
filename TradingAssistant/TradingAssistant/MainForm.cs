@@ -14,6 +14,7 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using System.Reflection;
 using Microsoft.Office.Interop.Excel;
+using System.Collections.Specialized;
 
 namespace TradingAssistant
 {
@@ -45,45 +46,27 @@ namespace TradingAssistant
         private ListViewHitTestInfo StockListHitTestInfo { get; set; } = null;
         private ListViewHitTestInfo PortfolioListHitTestInfo { get; set; } = null;
         private bool ReloadStockListAfterImport { get; set; } = false;
+        private bool ReloadPortfolioAfterImport { get; set; } = false;
+        private SortedDictionary<string, PortfolioItem> PortfolioMap { get; set; } = new SortedDictionary<string, PortfolioItem>();
 
         private string BuildConnectionString(string dbFile)
         {
             return string.Format("Data Source={0}; Mode=ReadWrite", dbFile);
         }
 
-        private DateTime DateTimeFromString(string sDate)
+        public bool AddSellTransaction(GiaoDichBan transac)
         {
-            if (sDate==null || sDate==string.Empty)
+            if (Settings.DBConnection == null || Settings.DBConnection.State != ConnectionState.Open)
             {
-                return new DateTime();
+                return false;
             }
 
-            int pos = -1;
-            int year = 0;
-            int month = 0;
-            int day = 0;
-            
-            string[] arrTemp = sDate.Split('/');
-            if (arrTemp.Length > 0)
-            {
-                day = int.Parse(arrTemp[0]);
-            }
-            if (arrTemp.Length > 1)
-            {
-                month = int.Parse(arrTemp[1]);
-            }
-            if (arrTemp.Length > 1)
-            {
-                pos = arrTemp[2].IndexOf(' ');
-                if (pos == -1)
-                    year = int.Parse(arrTemp[2]);
-                else
-                    year = int.Parse(arrTemp[2].Substring(0, pos));
-            }
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichBan(GiaoDichMua,KhoiLuongBan,GiaBan,ThoiGianBan,PhiGiaoDichBan,LenhBan,ThueGiaoDichBan) VALUES({0},{1},{2},'{3:D2}/{4:D2}/{5:D4}-{6:D2}:{7:D2}:{8:D2}',{9},'{10}',{11})", transac.GiaoDichMua, transac.KhoiLuongBan, transac.GiaBan, transac.ThoiGianBan.Day, transac.ThoiGianBan.Month, transac.ThoiGianBan.Year, transac.ThoiGianBan.Hour, transac.ThoiGianBan.Minute, transac.ThoiGianBan.Second, transac.PhiGiaoDichBan, transac.LoaiLenhBan, transac.ThueGiaoDichBan), Settings.DBConnection);
+            int rows = cmd.ExecuteNonQuery();
 
-            return new DateTime(year, month, day);
+            return rows > 0;
         }
-
+        
         private bool AddBuyTransaction(GiaoDichMua transac)
         {
             if(Settings.DBConnection==null||Settings.DBConnection.State!= ConnectionState.Open)
@@ -91,7 +74,7 @@ namespace TradingAssistant
                 return false;
             }
 
-            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichMua(CoPhieu,KhoiLuongMua,GiaMua,ThoiGianMua,PhiGiaoDichMua) VALUES({0},{1},{2},'{3:D2}/{4:D2}/{5:D4}-{6:D2}:{7:D2}:{8:D2}',{9})", transac.CoPhieu, transac.KhoiLuongMua, transac.GiaMua, transac.ThoiGianMua.Day, transac.ThoiGianMua.Month, transac.ThoiGianMua.Year, transac.ThoiGianMua.Hour, transac.ThoiGianMua.Minute, transac.ThoiGianMua.Second, transac.PhiGiaoDichMua), Settings.DBConnection);
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("INSERT INTO GiaoDichMua(CoPhieu,KhoiLuongMua,GiaMua,ThoiGianMua,PhiGiaoDichMua,LenhMua) VALUES({0},{1},{2},'{3:D2}/{4:D2}/{5:D4}-{6:D2}:{7:D2}:{8:D2}',{9},'{10}')", transac.CoPhieu, transac.KhoiLuongMua, transac.GiaMua, transac.ThoiGianMua.Day, transac.ThoiGianMua.Month, transac.ThoiGianMua.Year, transac.ThoiGianMua.Hour, transac.ThoiGianMua.Minute, transac.ThoiGianMua.Second, transac.PhiGiaoDichMua,transac.LoaiLenh), Settings.DBConnection);
             int rows = cmd.ExecuteNonQuery();
 
             return rows > 0;
@@ -119,7 +102,7 @@ namespace TradingAssistant
                     }
                     catch(Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         name = string.Empty;
                     }
 
@@ -129,7 +112,7 @@ namespace TradingAssistant
                     }
                     catch(Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         website = string.Empty;
                     }
 
@@ -149,19 +132,130 @@ namespace TradingAssistant
         private void LoadPortfolio()
         {
             portfolioListView.Items.Clear();
+            PortfolioMap.Clear();
             if(Settings.DBConnection==null||Settings.DBConnection.State!= ConnectionState.Open)
             {
                 return;
             }
 
-            SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT DISTINCT CoPhieu FROM GiaoDichMua"), Settings.DBConnection);
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT ID,CoPhieu,KhoiLuongMua,GiaMua,LenhMua,ThoiGianMua,PhiGiaoDichMua FROM GiaoDichMua"), Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
+
+            int iColIndex = 0;
             int ID = 0;
+            int CoPhieu = 0;
+            string MaCoPhieu = string.Empty;
+            int KhoiLuongGiaoDich = 0;
+            int GiaCoPhieu = 0;
+            string LenhGiaoDich = string.Empty;
+            string ThoiGianGiaoDich = string.Empty;
+            int PhiGiaoDich = 0;
+            int GiaTriGiaoDich = 0;
+            int ThueGiaoDich = 0;
+            int MaGiaoDichMua = 0;
+            PortfolioItem portfolioItem = null;
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    ID = reader.GetInt32(0);
+                    try
+                    {
+                        iColIndex = 0;
+                        ID = reader.GetInt32(iColIndex++);
+                    }
+                    catch(Exception ex)
+                    {
+                        Utils.DebugPrint(ex.Message);
+                        ID = 0;
+                    }
+
+                    if(ID != 0)
+                    {
+                        try
+                        {
+                            CoPhieu = reader.GetInt32(iColIndex++);
+                            KhoiLuongGiaoDich = reader.GetInt32(iColIndex++);
+                            GiaCoPhieu = reader.GetInt32(iColIndex++);
+                            LenhGiaoDich = reader.GetString(iColIndex++);
+                            ThoiGianGiaoDich = reader.GetString(iColIndex++);
+                            PhiGiaoDich = reader.GetInt32(iColIndex++);
+                            GiaTriGiaoDich = KhoiLuongGiaoDich * GiaCoPhieu;
+                            DateTime dt = Utils.DateTimeFromString(ThoiGianGiaoDich);
+                            MaCoPhieu = GetStockCode(CoPhieu);
+                            if (PortfolioMap.ContainsKey(MaCoPhieu))
+                            {
+                                portfolioItem = PortfolioMap[MaCoPhieu] as PortfolioItem;
+                            }
+                            else
+                            {
+                                portfolioItem = new PortfolioItem();
+                                portfolioItem.MaCoPhieu = MaCoPhieu;
+                                PortfolioMap.Add(MaCoPhieu, portfolioItem);
+                            }
+                            portfolioItem.KhoiLuongMua += KhoiLuongGiaoDich;
+                            portfolioItem.GiaTriMua += GiaTriGiaoDich;
+                            portfolioItem.DanhsachGiaoDichMua.Add(new GiaoDichMua(ID, CoPhieu, KhoiLuongGiaoDich, GiaCoPhieu, LenhGiaoDich, dt, PhiGiaoDich));
+                            portfolioItem.Updated = true;
+                        }
+                        catch(Exception ex)
+                        {
+                            Utils.DebugPrint(ex.Message);
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            if (PortfolioMap.Count > 0)
+            {
+                cmd = new SQLiteCommand(string.Format("SELECT ID,GiaoDichMua,KhoiLuongBan,GiaBan,LenhBan,ThoiGianBan,PhiGiaoDichBan,ThueGiaoDichBan FROM GiaoDichBan"), Settings.DBConnection);
+                reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        iColIndex = 0;
+                        ID = reader.GetInt32(iColIndex++);
+                        MaGiaoDichMua = reader.GetInt32(iColIndex++);
+                        KhoiLuongGiaoDich = reader.GetInt32(iColIndex++);
+                        GiaCoPhieu = reader.GetInt32(iColIndex++);
+                        LenhGiaoDich = reader.GetString(iColIndex++);
+                        ThoiGianGiaoDich = reader.GetString(iColIndex++);
+                        PhiGiaoDich = reader.GetInt32(iColIndex++);
+                        ThueGiaoDich = reader.GetInt32(iColIndex++);
+                        GiaTriGiaoDich = KhoiLuongGiaoDich * GiaCoPhieu;
+
+                        CoPhieu = CoPhieuCuaGiaoDichMua(MaGiaoDichMua);
+                        if (CoPhieu == 0)
+                        {
+                            continue;
+                        }
+                        MaCoPhieu = GetStockCode(CoPhieu);
+                        if (PortfolioMap.ContainsKey(MaCoPhieu))
+                        {
+                            portfolioItem = PortfolioMap[MaCoPhieu];
+                        }
+                        else
+                        {
+                            portfolioItem = new PortfolioItem();
+                            portfolioItem.MaCoPhieu = MaCoPhieu;
+                            PortfolioMap.Add(MaCoPhieu, portfolioItem);
+                        }
+
+                        portfolioItem.KhoiLuongBan += KhoiLuongGiaoDich;
+                        portfolioItem.GiaTriBan += GiaTriGiaoDich;
+                    }
+                }
+                foreach (string cophieu in PortfolioMap.Keys)
+                {
+                    PortfolioItem pi = PortfolioMap[cophieu] as PortfolioItem;
+                    ListViewItem li = portfolioListView.Items.Add(pi.MaCoPhieu);
+                    li.Tag = pi;
+                    li.SubItems.Add(pi.KhoiLuongMua.ToString());
+                    li.SubItems.Add(pi.GiaTriMua.ToString("n0"));
+                    li.SubItems.Add(pi.KhoiLuongBan.ToString());
+                    li.SubItems.Add(pi.GiaTriBan.ToString("n0"));
+                    li.SubItems.Add(pi.LaiLo.ToString("n0"));
                 }
             }
         }
@@ -177,7 +271,7 @@ namespace TradingAssistant
                 return;
             }
 
-            var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,PhiUngTruocTienBan,ThueTrenMoiGiaoDich FROM HeThong", Settings.DBConnection);
+            var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,PhiUngTruocTienBan,ThueThuNhap FROM HeThong", Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
             float fTemp = 0;
             string sTemp = string.Empty;
@@ -241,8 +335,60 @@ namespace TradingAssistant
                     }
                     catch(Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         res = 0;
+                    }
+                    break;
+                }
+            }
+
+            return res;
+        }
+
+        private int CoPhieuCuaGiaoDichMua(int ID)
+        {
+            int res = 0;
+            if (ID == 0 || Settings.DBConnection==null||Settings.DBConnection.State != ConnectionState.Open)
+            {
+                return res;
+            }
+
+            var cmd = new SQLiteCommand(string.Format("SELECT CoPhieu FROM GiaoDichMua WHERE ID={0}", ID), Settings.DBConnection);
+            SQLiteDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    res = reader.GetInt32(0);
+                    break;
+                }
+            }
+            return res;
+        }
+
+        private string GetStockCode(int stockID)
+        {
+            string res = string.Empty;
+            if (Settings.DBConnection == null || Settings.DBConnection.State != ConnectionState.Open)
+            {
+                return res;
+            }
+
+            SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT MaCoPhieu FROM CoPhieu WHERE ID='{0}'", stockID), Settings.DBConnection);
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    try
+                    {
+                        res = reader.GetString(0);
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.DebugPrint(ex.Message);
+                        res = string.Empty;
                     }
                     break;
                 }
@@ -296,7 +442,7 @@ namespace TradingAssistant
                     }
                     catch(Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         temp = "1/1/1970";
                     }
 
@@ -320,7 +466,7 @@ namespace TradingAssistant
                         }
                         catch(Exception ex)
                         {
-                            Debug.Print(ex.Message);
+                            Utils.DebugPrint(ex.Message);
                         }
                     }
                     else
@@ -339,11 +485,11 @@ namespace TradingAssistant
                     stock.KhoiLuongLuuHanh = shared;
                     try
                     {
-                        stock.NgayNiemYet = new DateTime(year, month, day);
+                        stock.NgayNiemYet = new DateTime(year, month, day, 0, 0, 0);
                     }
                     catch(Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                     }
 
                     ID = stockCodeListView.Items.Count + 1;
@@ -357,7 +503,7 @@ namespace TradingAssistant
             }
             /*catch(Exception ex)
             {
-                Debug.Print(ex.Message);
+                DebugPrint(ex.Message);
             }*/
         }
 
@@ -380,7 +526,7 @@ namespace TradingAssistant
             }
             catch(Exception ex)
             {
-                Debug.Print(ex.Message);
+                Utils.DebugPrint(ex.Message);
                 MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -402,7 +548,7 @@ namespace TradingAssistant
                     }
                     catch (Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
@@ -418,7 +564,7 @@ namespace TradingAssistant
                 }
                 catch(Exception ex)
                 {
-                    Debug.Print(ex.Message);
+                    Utils.DebugPrint(ex.Message);
                     MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 finally
@@ -452,7 +598,7 @@ namespace TradingAssistant
             }
             catch(Exception ex)
             {
-                Debug.Print(ex.Message);
+                Utils.DebugPrint(ex.Message);
                 MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -512,7 +658,7 @@ namespace TradingAssistant
                     }
                     catch (Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
@@ -524,6 +670,7 @@ namespace TradingAssistant
                     closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
                     LoadExchangesList();
                     LoadStockList();
+                    LoadPortfolio();
                 }
                 else
                 {
@@ -549,7 +696,7 @@ namespace TradingAssistant
             {
                 if(null!= StockListHitTestInfo)
                 {
-                    Debug.Print(StockListHitTestInfo.Location.ToString());
+                    Utils.DebugPrint(StockListHitTestInfo.Location.ToString());
                     if(StockListHitTestInfo.Location ==  ListViewHitTestLocations.None)
                     {
                         stockCodeListView.ContextMenuStrip = contextMenuStrip1;
@@ -712,7 +859,7 @@ namespace TradingAssistant
                     }
                     catch (Exception ex)
                     {
-                        Debug.Print(ex.Message);
+                        Utils.DebugPrint(ex.Message);
                         MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
@@ -771,7 +918,7 @@ namespace TradingAssistant
             }
             catch(Exception ex)
             {
-                Debug.Print(ex.Message);
+                Utils.DebugPrint(ex.Message);
                 MessageBox.Show(ex.Message, string.Format("Lỗi 0x{0:X8}", ex.HResult), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -787,7 +934,22 @@ namespace TradingAssistant
 
         private void buyMenuItem_Click(object sender, EventArgs e)
         {
+            ListViewItem selItem = null;
+            PortfolioItem pi = null;
+            if (portfolioListView.SelectedItems.Count > 0)
+                selItem = portfolioListView.SelectedItems[0];
+            if (selItem != null)
+                pi = selItem.Tag as PortfolioItem;
+            if (pi == null)
+            {
+                MessageBox.Show("Vui lòng chọn 1 cổ phiếu để mua thêm!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
+            BuyForm frm = new BuyForm(new CoPhieu(GetStockID(pi.MaCoPhieu), pi.MaCoPhieu));
+            if (frm.ShowDialog() != DialogResult.OK)
+                return;
+            LoadPortfolio();
         }
 
         private void sellMenuItem_Click(object sender, EventArgs e)
@@ -869,17 +1031,17 @@ namespace TradingAssistant
                     if (cellDate.Value != null)
                         sDate = DynamicToString(cellDate.Value);
                     if (cellType.Value != null)
-                        sType = cellType.Value;
+                        sType = DynamicToString(cellType.Value);
                     if (cellCode.Value != null)
-                        sCode = cellCode.Value;
+                        sCode = DynamicToString(cellCode.Value);
                     if (cellCount.Value != null)
-                        sCount = cellCount.Value;
+                        sCount = DynamicToString(cellCount.Value);
                     if (cellPrice.Value != null)
-                        sPrice = cellPrice.Value;
+                        sPrice = DynamicToString(cellPrice.Value);
                     if (cellCommand.Validation != null)
-                        sCommand = cellCommand.Value;
+                        sCommand = DynamicToString(cellCommand.Value);
 
-                    Debug.Print(string.Format("Ngày GD:{0}\tLoại GD:{1}\tMã CK:{2}\tKL:{3}\tGiá:{4}\tLệnh:{5}", sDate, sType, sCode, sCount, sPrice, sCommand));
+                    Utils.DebugPrint(string.Format("Ngày GD:{0}\tLoại GD:{1}\tMã CK:{2}\tKL:{3}\tGiá:{4}\tLệnh:{5}", sDate, sType, sCode, sCount, sPrice, sCommand));
 
                     if (sType.ToLower() == "Mua".ToLower())
                     {
@@ -896,13 +1058,57 @@ namespace TradingAssistant
 
                         if (giaoDichMua.KhoiLuongMua > 0 && giaoDichMua.GiaMua != 0)
                         {
-                            giaoDichMua.ThoiGianMua = DateTimeFromString(sDate.Trim());
+                            giaoDichMua.ThoiGianMua =Utils.DateTimeFromString(sDate.Trim());
                             giaoDichMua.PhiGiaoDichMua = (int)System.Math.Round((float)giaoDichMua.KhoiLuongMua * (float)giaoDichMua.GiaMua * Settings.System.PhiGiaoDichMua);
 
                             if (!AddBuyTransaction(giaoDichMua))
                             {
-                                Debug.Print(giaoDichMua.ToString());
+                                Utils.DebugPrint(giaoDichMua.ToString());
                             }
+                            ReloadPortfolioAfterImport = true;
+                        }
+                        else
+                        {
+                            row++;
+                            continue;
+                        }
+                    }
+                    else if(sType.ToLower() == "Bán".ToLower())
+                    {
+                        //TODO
+                        int IDMua = 0;
+                        if (PortfolioMap.ContainsKey(sCode))
+                        {
+                            PortfolioItem pi = PortfolioMap[sCode];
+                            if (!pi.DaBanHet)
+                            {
+                                int count = 0;
+                                foreach(GiaoDichMua mua in pi.DanhsachGiaoDichMua)
+                                {
+                                    count += mua.KhoiLuongMua;
+                                    if(count>=pi.KhoiLuongBan)
+                                    {
+                                        IDMua = mua.ID;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        GiaoDichBan ban = new GiaoDichBan();
+                        ban.GiaoDichMua = IDMua;
+                        ban.KhoiLuongBan = int.Parse(sCount.Replace(",", "").Trim());
+                        ban.GiaBan = (int)float.Parse(sPrice.Replace(".", "").Trim());
+                        if (ban.KhoiLuongBan > 0 && ban.GiaBan != 0)
+                        {
+                            ban.ThoiGianBan = Utils.DateTimeFromString(sDate.Trim());
+                            ban.PhiGiaoDichBan = (int)System.Math.Round((float)ban.KhoiLuongBan* (float)ban.GiaBan * Settings.System.PhiGiaoDichBan);
+                            ban.ThueGiaoDichBan = (int)((float)ban.KhoiLuongBan * (float)ban.GiaBan * Settings.System.ThueTrenMoiGiaoDich);
+                            if (!AddSellTransaction(ban))
+                            {
+                                Utils.DebugPrint(ban.ToString());
+                            }
+                            ReloadPortfolioAfterImport = true;
                         }
                         else
                         {
@@ -934,6 +1140,12 @@ namespace TradingAssistant
             if (ReloadStockListAfterImport)
             {
                 LoadStockList();
+                ReloadStockListAfterImport = false;
+            }
+            if (ReloadPortfolioAfterImport)
+            {
+                LoadPortfolio();
+                ReloadPortfolioAfterImport = false;
             }
         }
 
@@ -942,6 +1154,48 @@ namespace TradingAssistant
             if (null != Excel)
             {
                 Excel.Application.Quit();
+            }
+        }
+
+        private void portfolioListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (portfolioListView.SelectedItems.Count <= 0)
+            {
+                portfolioListView.ContextMenuStrip = null;
+            }
+            else
+            {
+                portfolioListView.ContextMenuStrip = contextMenuStrip4;
+                ListViewItem selItem = portfolioListView.SelectedItems[0];
+                if (selItem == null)
+                {
+                    detailMenuItem.Enabled = false;
+                    buyMenuItem.Enabled = false;
+                    sellMenuItem.Enabled = false;
+                }
+                else
+                {
+                    PortfolioItem pi = selItem.Tag as PortfolioItem;
+                    if (pi == null)
+                    {
+                        detailMenuItem.Enabled = false;
+                        buyMenuItem.Enabled = false;
+                        sellMenuItem.Enabled = false;
+                    }
+                    else
+                    {
+                        detailMenuItem.Enabled = true;
+                        buyMenuItem.Enabled = true;
+                        if (pi.DaBanHet) {
+                            sellMenuItem.Enabled = false;
+                            sellMenuItem.Text = "Đã bán hết!";
+                        }
+                        else {
+                            sellMenuItem.Enabled = true;
+                            sellMenuItem.Text = "Bán";
+                        }
+                    }
+                }
             }
         }
     }

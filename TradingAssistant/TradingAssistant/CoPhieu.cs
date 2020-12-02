@@ -15,5 +15,17 @@ namespace TradingAssistant
         public long KhoiLuongNiemYet { get; set; } = 0;
         public long KhoiLuongLuuHanh { get; set; } = 0;
         public DateTime NgayNiemYet { get; set; } = new DateTime();
+
+        public CoPhieu()
+        {
+
+        }
+
+        public CoPhieu(int id, string ma="", string tendoanhnghiep = "")
+        {
+            ID = id;
+            MaCoPhieu = ma;
+            TenDoanhNghiep = tendoanhnghiep;
+        }
     }
 }
