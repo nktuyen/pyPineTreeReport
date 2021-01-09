@@ -15,7 +15,7 @@ class UPCoMGrabber(grabber.Grabber):
             return dict()
         
         url: str = f'{self._home}cophieu-etfs/chi-tiet-chung-khoan-uc-{stock_code}.html'
-        #print(f'{__file__}[18]: url={url}')
+        print(f'{__file__}[18]: url={url}')
         res: requests.Response = None
         try:
             res = requests.get(url)
@@ -79,7 +79,7 @@ class UPCoMGrabber(grabber.Grabber):
                     content = content.firstElementChild
                 val = html2text(unescape(content.innerText.strip())).strip()
             
-            #print(f'Key={key}, Value={val}')
+            print(f'Key={key}, Value={val}')
             if key.lower() == 'Ngày GD đầu tiên'.lower():
                 date = val
             elif key.lower() == 'KLNY (Cổ phiếu)'.lower() or key.lower() == 'KLĐKGD (Cổ phiếu)'.lower():
