@@ -44,7 +44,6 @@
             this.colExchange = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.portfolioTagPage = new System.Windows.Forms.TabPage();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.portfolioListView = new System.Windows.Forms.ListView();
             this.colCoPhieu = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colKhoiLuongMua = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -79,6 +78,8 @@
             this.buyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sellMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.StatusLabel = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.stockTabPage.SuspendLayout();
             this.portfolioTagPage.SuspendLayout();
@@ -91,14 +92,17 @@
             // 
             // tabControl1
             // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.stockTabPage);
             this.tabControl1.Controls.Add(this.portfolioTagPage);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(784, 397);
+            this.tabControl1.Size = new System.Drawing.Size(784, 380);
             this.tabControl1.TabIndex = 0;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // stockTabPage
             // 
@@ -112,7 +116,7 @@
             this.stockTabPage.Location = new System.Drawing.Point(4, 22);
             this.stockTabPage.Name = "stockTabPage";
             this.stockTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.stockTabPage.Size = new System.Drawing.Size(776, 371);
+            this.stockTabPage.Size = new System.Drawing.Size(776, 354);
             this.stockTabPage.TabIndex = 0;
             this.stockTabPage.Text = "Cổ phiếu";
             this.stockTabPage.UseVisualStyleBackColor = true;
@@ -191,11 +195,11 @@
             this.stockCodeListView.GridLines = true;
             this.stockCodeListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.stockCodeListView.HideSelection = false;
-            this.stockCodeListView.Location = new System.Drawing.Point(3, 36);
+            this.stockCodeListView.Location = new System.Drawing.Point(0, 36);
             this.stockCodeListView.MultiSelect = false;
             this.stockCodeListView.Name = "stockCodeListView";
             this.stockCodeListView.ShowItemToolTips = true;
-            this.stockCodeListView.Size = new System.Drawing.Size(770, 332);
+            this.stockCodeListView.Size = new System.Drawing.Size(776, 319);
             this.stockCodeListView.TabIndex = 0;
             this.stockCodeListView.UseCompatibleStateImageBehavior = false;
             this.stockCodeListView.View = System.Windows.Forms.View.Details;
@@ -231,26 +235,19 @@
             // 
             // portfolioTagPage
             // 
-            this.portfolioTagPage.Controls.Add(this.progressBar1);
             this.portfolioTagPage.Controls.Add(this.portfolioListView);
             this.portfolioTagPage.Location = new System.Drawing.Point(4, 22);
             this.portfolioTagPage.Name = "portfolioTagPage";
-            this.portfolioTagPage.Size = new System.Drawing.Size(776, 371);
+            this.portfolioTagPage.Size = new System.Drawing.Size(776, 354);
             this.portfolioTagPage.TabIndex = 1;
             this.portfolioTagPage.Text = "Danh mục đầu tư";
             this.portfolioTagPage.UseVisualStyleBackColor = true;
             // 
-            // progressBar1
-            // 
-            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar1.Location = new System.Drawing.Point(0, 361);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(776, 10);
-            this.progressBar1.TabIndex = 1;
-            this.progressBar1.Visible = false;
-            // 
             // portfolioListView
             // 
+            this.portfolioListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.portfolioListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.colCoPhieu,
             this.colKhoiLuongMua,
@@ -259,7 +256,6 @@
             this.colTongTienBan,
             this.colLaiLo});
             this.portfolioListView.Cursor = System.Windows.Forms.Cursors.Default;
-            this.portfolioListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.portfolioListView.FullRowSelect = true;
             this.portfolioListView.GridLines = true;
             this.portfolioListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
@@ -268,7 +264,7 @@
             this.portfolioListView.MultiSelect = false;
             this.portfolioListView.Name = "portfolioListView";
             this.portfolioListView.ShowItemToolTips = true;
-            this.portfolioListView.Size = new System.Drawing.Size(776, 371);
+            this.portfolioListView.Size = new System.Drawing.Size(776, 355);
             this.portfolioListView.TabIndex = 0;
             this.portfolioListView.UseCompatibleStateImageBehavior = false;
             this.portfolioListView.View = System.Windows.Forms.View.Details;
@@ -518,11 +514,34 @@
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.Location = new System.Drawing.Point(7, 403);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(769, 14);
+            this.progressBar1.TabIndex = 4;
+            this.progressBar1.Visible = false;
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.StatusLabel.Location = new System.Drawing.Point(7, 403);
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Size = new System.Drawing.Size(769, 14);
+            this.StatusLabel.TabIndex = 7;
+            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.StatusLabel.Click += new System.EventHandler(this.StatusLabel_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 421);
+            this.Controls.Add(this.StatusLabel);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -599,6 +618,7 @@
         private System.Windows.Forms.ToolStripMenuItem sellMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Label StatusLabel;
     }
 }
 

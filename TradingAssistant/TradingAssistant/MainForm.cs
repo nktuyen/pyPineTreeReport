@@ -26,6 +26,9 @@ namespace TradingAssistant
             Settings = Settings.Instance;
         }
 
+        private int TongTienMua { get; set; } = 0;
+        public int TongTienBan { get; set; } = 0;
+
         private Microsoft.Office.Interop.Excel.Application Excel
         {
             get
@@ -133,6 +136,8 @@ namespace TradingAssistant
         {
             portfolioListView.Items.Clear();
             PortfolioMap.Clear();
+            TongTienMua = 0;
+            TongTienBan = 0;
             if(Settings.DBConnection==null||Settings.DBConnection.State!= ConnectionState.Open)
             {
                 return;
@@ -194,6 +199,7 @@ namespace TradingAssistant
                             }
                             portfolioItem.KhoiLuongMua += KhoiLuongGiaoDich;
                             portfolioItem.GiaTriMua += GiaTriGiaoDich;
+                            TongTienMua += GiaTriGiaoDich;
                             portfolioItem.DanhsachGiaoDichMua.Add(new GiaoDichMua(ID, CoPhieu, KhoiLuongGiaoDich, GiaCoPhieu, LenhGiaoDich, dt, PhiGiaoDich));
                             portfolioItem.Updated = true;
                         }
@@ -244,6 +250,7 @@ namespace TradingAssistant
 
                         portfolioItem.KhoiLuongBan += KhoiLuongGiaoDich;
                         portfolioItem.GiaTriBan += GiaTriGiaoDich;
+                        TongTienBan += GiaTriGiaoDich;
                     }
                 }
                 foreach (string cophieu in PortfolioMap.Keys)
@@ -500,6 +507,8 @@ namespace TradingAssistant
                     item.SubItems.Add(Settings.DanhSachSanGiaoDich[stock.SanNiemYet].MaSan);
                     item.SubItems.Add(string.Format("{0:D2}/{1:D2}/{2:D4}", stock.NgayNiemYet.Day, stock.NgayNiemYet.Month, stock.NgayNiemYet.Year));
                 }
+
+                tabControl1_SelectedIndexChanged(this, new EventArgs());
             }
             /*catch(Exception ex)
             {
@@ -1038,7 +1047,7 @@ namespace TradingAssistant
                         sCount = DynamicToString(cellCount.Value);
                     if (cellPrice.Value != null)
                         sPrice = DynamicToString(cellPrice.Value);
-                    if (cellCommand.Validation != null)
+                    if (cellCommand.Value != null)
                         sCommand = DynamicToString(cellCommand.Value);
 
                     Utils.DebugPrint(string.Format("Ngày GD:{0}\tLoại GD:{1}\tMã CK:{2}\tKL:{3}\tGiá:{4}\tLệnh:{5}", sDate, sType, sCode, sCount, sPrice, sCommand));
@@ -1147,6 +1156,7 @@ namespace TradingAssistant
                 LoadPortfolio();
                 ReloadPortfolioAfterImport = false;
             }
+            tabControl1_SelectedIndexChanged(this, new EventArgs());
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -1196,6 +1206,28 @@ namespace TradingAssistant
                         }
                     }
                 }
+            }
+        }
+
+        private void StatusLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TabPage selPage = tabControl1.SelectedTab;
+            if (selPage == stockTabPage)
+            {
+                StatusLabel.Text = string.Format("Tổng số: {0} mã cổ phiếu", stockCodeListView.Items.Count);
+            }
+            else if (selPage == portfolioTagPage)
+            {
+                StatusLabel.Text = string.Format("Tổng giá trị mua: {0} VND        Tổng giá trị bán: {1} VND", TongTienMua.ToString("n0"), TongTienBan.ToString("n0"));
+            }
+            else
+            {
+                StatusLabel.Text = string.Empty;
             }
         }
     }
