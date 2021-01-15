@@ -24,10 +24,13 @@ namespace TradingAssistant
         {
             InitializeComponent();
             Settings = Settings.Instance;
+            Settings.DBFileChanged += new Settings.DBFileChangedDel(OnDBFileChanged);
         }
 
         private int TongTienMua { get; set; } = 0;
         public int TongTienBan { get; set; } = 0;
+        public int TongTienPhiGiaoDich { get; set; } = 0;
+        public int TongTienThue { get; set; } = 0;
 
         private Microsoft.Office.Interop.Excel.Application Excel
         {
@@ -55,6 +58,18 @@ namespace TradingAssistant
         private string BuildConnectionString(string dbFile)
         {
             return string.Format("Data Source={0}; Mode=ReadWrite", dbFile);
+        }
+
+        private void OnDBFileChanged(string file)
+        {
+            if(file==string.Empty)
+            {
+                Text = "TradingAssistant";
+            }
+            else
+            {
+                Text = string.Format("TradingAssistant - {0}", file);
+            }
         }
 
         public bool AddSellTransaction(GiaoDichBan transac)
@@ -138,6 +153,8 @@ namespace TradingAssistant
             PortfolioMap.Clear();
             TongTienMua = 0;
             TongTienBan = 0;
+            TongTienThue = 0;
+            TongTienPhiGiaoDich = 0;
             if(Settings.DBConnection==null||Settings.DBConnection.State!= ConnectionState.Open)
             {
                 return;
@@ -200,6 +217,8 @@ namespace TradingAssistant
                             portfolioItem.KhoiLuongMua += KhoiLuongGiaoDich;
                             portfolioItem.GiaTriMua += GiaTriGiaoDich;
                             TongTienMua += GiaTriGiaoDich;
+                            TongTienPhiGiaoDich += PhiGiaoDich;
+                            TongTienThue += ThueGiaoDich;
                             portfolioItem.DanhsachGiaoDichMua.Add(new GiaoDichMua(ID, CoPhieu, KhoiLuongGiaoDich, GiaCoPhieu, LenhGiaoDich, dt, PhiGiaoDich));
                             portfolioItem.Updated = true;
                         }
@@ -251,6 +270,8 @@ namespace TradingAssistant
                         portfolioItem.KhoiLuongBan += KhoiLuongGiaoDich;
                         portfolioItem.GiaTriBan += GiaTriGiaoDich;
                         TongTienBan += GiaTriGiaoDich;
+                        TongTienPhiGiaoDich += PhiGiaoDich;
+                        TongTienThue += ThueGiaoDich;
                     }
                 }
                 foreach (string cophieu in PortfolioMap.Keys)
@@ -278,7 +299,7 @@ namespace TradingAssistant
                 return;
             }
 
-            var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,PhiUngTruocTienBan,ThueThuNhap FROM HeThong", Settings.DBConnection);
+            var cmd = new SQLiteCommand("SELECT PhiGiaoDichMua,PhiGiaoDichBan,ThueThuNhap FROM HeThong", Settings.DBConnection);
             SQLiteDataReader reader = cmd.ExecuteReader();
             float fTemp = 0;
             string sTemp = string.Empty;
@@ -294,9 +315,6 @@ namespace TradingAssistant
                     Settings.System.PhiGiaoDichBan = fTemp;
 
                     fTemp = reader.GetFloat(2);
-                    Settings.System.PhiUngTruocTienBan = fTemp;
-
-                    fTemp = reader.GetFloat(3);
                     Settings.System.ThueTrenMoiGiaoDich = fTemp;
 
                     break;
@@ -545,31 +563,6 @@ namespace TradingAssistant
                 {
                     writer.Write(TradingAssistant.Properties.Resources.Stock);
                     writer.Flush();
-                    SQLiteConnection conn = new SQLiteConnection(BuildConnectionString(dlg.FileName));
-                    if (null == conn)
-                    {
-                        MessageBox.Show("Không thể mở tệp dữ liệu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    try
-                    {
-                        conn.Open();
-                    }
-                    catch (Exception ex)
-                    {
-                        Utils.DebugPrint(ex.Message);
-                        MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    if (Settings.DBConnection != null)
-                    {
-                        Settings.DBConnection.Close();
-                    }
-                    Settings.DataFile = dlg.FileName;
-                    Settings.DBConnection = conn;
-                    closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
-
-                    LoadStockList();
                 }
                 catch(Exception ex)
                 {
@@ -581,6 +574,33 @@ namespace TradingAssistant
                     writer.Close();
                 }
             }
+
+            SQLiteConnection conn = new SQLiteConnection(BuildConnectionString(dlg.FileName));
+            if (null == conn)
+            {
+                MessageBox.Show("Không thể mở tệp dữ liệu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            try
+            {
+                conn.Open();
+            }
+            catch (Exception ex)
+            {
+                Utils.DebugPrint(ex.Message);
+                MessageBox.Show(ex.Message, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            if (Settings.DBConnection != null)
+            {
+                Settings.DBConnection.Close();
+            }
+            Settings.DataFile = dlg.FileName;
+            Settings.DBConnection = conn;
+            closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
+
+            LoadExchangesList();
+            LoadStockList();
         }
 
         private void mnuOpenFile_Click(object sender, EventArgs e)
@@ -618,6 +638,7 @@ namespace TradingAssistant
             Settings.DataFile = dlg.FileName;
             Settings.DBConnection = conn;
             closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
+            LoadExchangesList();
             LoadStockList();
         }
 
@@ -651,6 +672,9 @@ namespace TradingAssistant
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            includedFee.Checked = Settings.BaoGomCaPhiGiaoDich;
+            includedTax.Checked = Settings.BaoGomCaThue;
+
             if(Settings.DataFile != null && Settings.DataFile != string.Empty)
             {
                 if (File.Exists(Settings.DataFile))
@@ -675,6 +699,7 @@ namespace TradingAssistant
                     {
                         Settings.DBConnection.Close();
                     }
+                    OnDBFileChanged(Settings.DataFile);
                     Settings.DBConnection = conn;
                     closeDataFileMenuItem.Enabled = Settings.DBConnection != null && Settings.DBConnection.State == ConnectionState.Open;
                     LoadExchangesList();
@@ -838,6 +863,8 @@ namespace TradingAssistant
                 Settings.DBConnection = null;
             }
             LoadStockList();
+            LoadExchangesList();
+            LoadPortfolio();
         }
 
         private void stockCodeListView_DragEnter(object sender, DragEventArgs e)
@@ -938,7 +965,20 @@ namespace TradingAssistant
 
         private void detailMenuItem_Click(object sender, EventArgs e)
         {
-            
+            ListViewItem selItem = portfolioListView.SelectedItems[0];
+            if (null != selItem.Tag)
+            {
+                PortfolioItem pi = selItem.Tag as PortfolioItem;
+                if (null != pi)
+                {
+                    PortfolioDetailForm frm = new PortfolioDetailForm();
+                    frm.PortfolioItem = pi;
+                    if (frm.ShowDialog() == DialogResult.OK)
+                    {
+                        //
+                    }
+                }
+            }
         }
 
         private void buyMenuItem_Click(object sender, EventArgs e)
@@ -1000,29 +1040,37 @@ namespace TradingAssistant
 
             Workbook wb = e.Argument as Workbook;
             int row = 11;
+            int temp = 0;
             Range cellDate = null;
             Range cellType = null;
             Range cellCode = null;
             Range cellCount = null;
             Range cellPrice = null;
             Range cellCommand = null;
+            Range cellFee = null;
+            Range cellTax = null;
+
             string sDate = string.Empty;
             string sType = string.Empty;
             string sCode = string.Empty;
             string sCount = string.Empty;
             string sPrice = string.Empty;
             string sCommand = string.Empty;
+            string sFee = string.Empty;
+            string sTax = string.Empty;
 
             foreach (Worksheet ws in wb.Sheets)
             {
                 while (true)
                 {
-                    cellDate = ws.Cells[row, 2];
-                    cellType = ws.Cells[row, 3];
-                    cellCode = ws.Cells[row, 4];
-                    cellCount = ws.Cells[row, 7];
-                    cellPrice = ws.Cells[row, 8];
-                    cellCommand = ws.Cells[row, 13];
+                    cellDate = ws.Cells[row, 3];
+                    cellType = ws.Cells[row, 4];
+                    cellCode = ws.Cells[row, 5];
+                    cellCount = ws.Cells[row, 8];
+                    cellPrice = ws.Cells[row, 9];
+                    cellFee = ws.Cells[row, 12];
+                    cellTax = ws.Cells[row, 13];
+                    cellCommand = ws.Cells[row, 15];
 
                     sDate = string.Empty;
                     sType = string.Empty;
@@ -1030,27 +1078,37 @@ namespace TradingAssistant
                     sCount = string.Empty;
                     sPrice = string.Empty;
                     sCommand = string.Empty;
+                    sFee = string.Empty;
+                    sTax = string.Empty;
 
-                    if (cellDate.Value == null && cellType.Value == null && cellCode.Value == null && cellCount.Value == null && cellPrice.Value == null && cellCommand.Value == null)
+                    if (cellCode.Value == null)
                     {
                         break;
                     }
 
+                    if (cellCode.Value != null)
+                        sCode = DynamicToString(cellCode.Value);
+                    
+                    if (sCode == string.Empty)
+                        break;
 
                     if (cellDate.Value != null)
                         sDate = DynamicToString(cellDate.Value);
                     if (cellType.Value != null)
                         sType = DynamicToString(cellType.Value);
-                    if (cellCode.Value != null)
-                        sCode = DynamicToString(cellCode.Value);
                     if (cellCount.Value != null)
                         sCount = DynamicToString(cellCount.Value);
                     if (cellPrice.Value != null)
                         sPrice = DynamicToString(cellPrice.Value);
                     if (cellCommand.Value != null)
                         sCommand = DynamicToString(cellCommand.Value);
+                    if (cellFee.Value != null)
+                        sFee = DynamicToString(cellFee.Value);
+                    if (cellTax.Value != null)
+                        sTax = DynamicToString(cellTax.Value);
 
-                    Utils.DebugPrint(string.Format("Ngày GD:{0}\tLoại GD:{1}\tMã CK:{2}\tKL:{3}\tGiá:{4}\tLệnh:{5}", sDate, sType, sCode, sCount, sPrice, sCommand));
+                    Utils.DebugPrint(string.Format("Ngày GD:{0}\tLoại GD:{1}\tMã CK:{2}\tKL:{3}\tGiá:{4}\tPhí:{5}\tThuế:{6}\tLệnh:{7}", sDate, sType, sCode, sCount, sPrice, sFee, sTax, sCommand));
+
 
                     if (sType.ToLower() == "Mua".ToLower())
                     {
@@ -1067,8 +1125,16 @@ namespace TradingAssistant
 
                         if (giaoDichMua.KhoiLuongMua > 0 && giaoDichMua.GiaMua != 0)
                         {
-                            giaoDichMua.ThoiGianMua =Utils.DateTimeFromString(sDate.Trim());
-                            giaoDichMua.PhiGiaoDichMua = (int)System.Math.Round((float)giaoDichMua.KhoiLuongMua * (float)giaoDichMua.GiaMua * Settings.System.PhiGiaoDichMua);
+                            giaoDichMua.ThoiGianMua = Utils.DateTimeFromString(sDate.Trim());
+                            if(int.TryParse(sFee, out temp))
+                            {
+                                giaoDichMua.PhiGiaoDichMua = temp;
+                            }
+                            else
+                            {
+                                giaoDichMua.PhiGiaoDichMua = (int)((float)giaoDichMua.GiaMua * (float)giaoDichMua.KhoiLuongMua / (float)100 * (float)Settings.System.PhiGiaoDichMua);
+                            }
+                            giaoDichMua.LoaiLenh = sCommand;
 
                             if (!AddBuyTransaction(giaoDichMua))
                             {
@@ -1111,8 +1177,9 @@ namespace TradingAssistant
                         if (ban.KhoiLuongBan > 0 && ban.GiaBan != 0)
                         {
                             ban.ThoiGianBan = Utils.DateTimeFromString(sDate.Trim());
-                            ban.PhiGiaoDichBan = (int)System.Math.Round((float)ban.KhoiLuongBan* (float)ban.GiaBan * Settings.System.PhiGiaoDichBan);
-                            ban.ThueGiaoDichBan = (int)((float)ban.KhoiLuongBan * (float)ban.GiaBan * Settings.System.ThueTrenMoiGiaoDich);
+                            ban.PhiGiaoDichBan = int.Parse(sFee.Replace(",", "").Trim());
+                            ban.ThueGiaoDichBan = int.Parse(sTax.Replace(",", "").Trim());
+
                             if (!AddSellTransaction(ban))
                             {
                                 Utils.DebugPrint(ban.ToString());
@@ -1140,12 +1207,21 @@ namespace TradingAssistant
                 progressBar1.Minimum = 0;
                 progressBar1.Style = ProgressBarStyle.Marquee;
                 progressBar1.Visible = true;
+                this.UseWaitCursor = true;
+                contextMenuStrip1.Enabled = contextMenuStrip2.Enabled = contextMenuStrip3.Enabled = contextMenuStrip4.Enabled = false;
+                menuStrip1.Enabled = false;
+                StatusLabel.Visible = false;
             }
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            contextMenuStrip1.Enabled = contextMenuStrip2.Enabled = contextMenuStrip3.Enabled = contextMenuStrip4.Enabled = true;
+            menuStrip1.Enabled = true;
             progressBar1.Visible = false;
+            StatusLabel.Visible = true;
+            this.UseWaitCursor = false;
+            Excel.Quit();
             if (ReloadStockListAfterImport)
             {
                 LoadStockList();
@@ -1223,12 +1299,53 @@ namespace TradingAssistant
             }
             else if (selPage == portfolioTagPage)
             {
-                StatusLabel.Text = string.Format("Tổng giá trị mua: {0} VND        Tổng giá trị bán: {1} VND", TongTienMua.ToString("n0"), TongTienBan.ToString("n0"));
+                int TongLaiLo = (TongTienBan - TongTienMua);
+                if (Settings.BaoGomCaPhiGiaoDich)
+                    TongLaiLo -= TongTienPhiGiaoDich;
+                if (Settings.BaoGomCaThue)
+                    TongLaiLo -= TongTienThue;
+
+                StatusLabel.Text = string.Format("Tổng giá trị mua: {0} ₫  |  Tổng giá trị bán: {1} ₫  |  Tổng phí giao dịch: {2} ₫  |  Tổng thuế: {3} ₫  |  Tổng lãi/lỗ: {4} ₫", TongTienMua.ToString("n0"), TongTienBan.ToString("n0"), TongTienPhiGiaoDich.ToString("n0"), TongTienThue.ToString("n0"), TongLaiLo.ToString("n0"));
             }
             else
             {
                 StatusLabel.Text = string.Empty;
             }
+        }
+
+        private void portfolioListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && portfolioListView.SelectedItems.Count == 1)
+            {
+                ListViewItem selItem = portfolioListView.SelectedItems[0];
+                if (null != selItem.Tag)
+                {
+                    PortfolioItem pi = selItem.Tag as PortfolioItem;
+                    if (null != pi)
+                    {
+                        PortfolioDetailForm frm = new PortfolioDetailForm();
+                        frm.PortfolioItem = pi;
+                        if(frm.ShowDialog()== DialogResult.OK)
+                        {
+                            //
+                        }
+                    }
+                }
+            }
+        }
+
+        private void includedFee_Click(object sender, EventArgs e)
+        {
+            includedFee.Checked = !includedFee.Checked;
+            Settings.BaoGomCaPhiGiaoDich = includedFee.Checked;
+            tabControl1_SelectedIndexChanged(sender, new EventArgs());
+        }
+
+        private void includedTax_Click(object sender, EventArgs e)
+        {
+            includedTax.Checked = !includedTax.Checked;
+            Settings.BaoGomCaThue = includedTax.Checked;
+            tabControl1_SelectedIndexChanged(sender, new EventArgs());
         }
     }
 }

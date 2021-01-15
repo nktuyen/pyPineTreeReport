@@ -80,6 +80,10 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.StatusLabel = new System.Windows.Forms.Label();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.tínhLãilỗToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.includedFee = new System.Windows.Forms.ToolStripMenuItem();
+            this.includedTax = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.stockTabPage.SuspendLayout();
             this.portfolioTagPage.SuspendLayout();
@@ -100,7 +104,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(784, 380);
+            this.tabControl1.Size = new System.Drawing.Size(804, 380);
             this.tabControl1.TabIndex = 0;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
@@ -116,7 +120,7 @@
             this.stockTabPage.Location = new System.Drawing.Point(4, 22);
             this.stockTabPage.Name = "stockTabPage";
             this.stockTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.stockTabPage.Size = new System.Drawing.Size(776, 354);
+            this.stockTabPage.Size = new System.Drawing.Size(796, 354);
             this.stockTabPage.TabIndex = 0;
             this.stockTabPage.Text = "Cổ phiếu";
             this.stockTabPage.UseVisualStyleBackColor = true;
@@ -238,7 +242,7 @@
             this.portfolioTagPage.Controls.Add(this.portfolioListView);
             this.portfolioTagPage.Location = new System.Drawing.Point(4, 22);
             this.portfolioTagPage.Name = "portfolioTagPage";
-            this.portfolioTagPage.Size = new System.Drawing.Size(776, 354);
+            this.portfolioTagPage.Size = new System.Drawing.Size(796, 354);
             this.portfolioTagPage.TabIndex = 1;
             this.portfolioTagPage.Text = "Danh mục đầu tư";
             this.portfolioTagPage.UseVisualStyleBackColor = true;
@@ -264,11 +268,12 @@
             this.portfolioListView.MultiSelect = false;
             this.portfolioListView.Name = "portfolioListView";
             this.portfolioListView.ShowItemToolTips = true;
-            this.portfolioListView.Size = new System.Drawing.Size(776, 355);
+            this.portfolioListView.Size = new System.Drawing.Size(796, 355);
             this.portfolioListView.TabIndex = 0;
             this.portfolioListView.UseCompatibleStateImageBehavior = false;
             this.portfolioListView.View = System.Windows.Forms.View.Details;
             this.portfolioListView.SelectedIndexChanged += new System.EventHandler(this.portfolioListView_SelectedIndexChanged);
+            this.portfolioListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.portfolioListView_MouseDoubleClick);
             this.portfolioListView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.portfolioListView_MouseDown);
             // 
             // colCoPhieu
@@ -310,10 +315,11 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tệpToolStripMenuItem,
+            this.toolStripMenuItem2,
             this.thiếtLậpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(784, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(804, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -518,9 +524,11 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(7, 403);
+            this.progressBar1.Location = new System.Drawing.Point(4, 403);
+            this.progressBar1.MarqueeAnimationSpeed = 10;
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(769, 14);
+            this.progressBar1.Size = new System.Drawing.Size(795, 14);
+            this.progressBar1.Step = 20;
             this.progressBar1.TabIndex = 4;
             this.progressBar1.Visible = false;
             // 
@@ -528,20 +536,51 @@
             // 
             this.StatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.StatusLabel.Location = new System.Drawing.Point(7, 403);
+            this.StatusLabel.Location = new System.Drawing.Point(6, 404);
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(769, 14);
+            this.StatusLabel.Size = new System.Drawing.Size(792, 14);
             this.StatusLabel.TabIndex = 7;
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.StatusLabel.Click += new System.EventHandler(this.StatusLabel_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tínhLãilỗToolStripMenuItem});
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(68, 20);
+            this.toolStripMenuItem2.Text = "&Tùy chọn";
+            // 
+            // tínhLãilỗToolStripMenuItem
+            // 
+            this.tínhLãilỗToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.includedFee,
+            this.includedTax});
+            this.tínhLãilỗToolStripMenuItem.Name = "tínhLãilỗToolStripMenuItem";
+            this.tínhLãilỗToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.tínhLãilỗToolStripMenuItem.Text = "Tính lãi &lỗ";
+            // 
+            // includedFee
+            // 
+            this.includedFee.Name = "includedFee";
+            this.includedFee.Size = new System.Drawing.Size(209, 22);
+            this.includedFee.Text = "Bao gồm cả &phí giao dịch";
+            this.includedFee.Click += new System.EventHandler(this.includedFee_Click);
+            // 
+            // includedTax
+            // 
+            this.includedTax.Name = "includedTax";
+            this.includedTax.Size = new System.Drawing.Size(209, 22);
+            this.includedTax.Text = "Bao gồm cả th&uế";
+            this.includedTax.Click += new System.EventHandler(this.includedTax_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 421);
-            this.Controls.Add(this.StatusLabel);
+            this.ClientSize = new System.Drawing.Size(804, 421);
             this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -619,6 +658,10 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label StatusLabel;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem tínhLãilỗToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem includedFee;
+        private System.Windows.Forms.ToolStripMenuItem includedTax;
     }
 }
 

@@ -13,7 +13,6 @@ namespace TradingAssistant
     {
         public float PhiGiaoDichMua { get; set; } = 0;
         public float PhiGiaoDichBan { get; set; } = 0;
-        public float PhiUngTruocTienBan { get; set; } = 0;
         public float ThueTrenMoiGiaoDich { get; set; } = 0;
         public bool BaoGomPhiGiaoDichMua { get; set; } = false;
         public bool BaoGomPhiGiaoDichBan { get; set; } = false;
@@ -39,6 +38,9 @@ namespace TradingAssistant
 
     class Settings
     {
+        public delegate void DBFileChangedDel(string newFile);
+        public event DBFileChangedDel DBFileChanged;
+
         private static Settings _instance = null;
         private const string STR_KEY = "SOFTWARE\\NKTUYEN\\TradingAssistant\\Settings\\";
         private const string STR_KEY_RECENT_FILE = "RecentFile";
@@ -57,7 +59,21 @@ namespace TradingAssistant
         }
 
         public HeThong System { get; set; } = null;
-        public string DataFile { get; set; } = string.Empty;
+        private string _dbfile = string.Empty;
+        public string DataFile
+        {
+            get
+            {
+                return _dbfile;
+            }
+            set
+            {
+                _dbfile = value;
+                DBFileChanged?.Invoke(value);
+            }
+        }
+        public bool BaoGomCaPhiGiaoDich { get; set; } = true;
+        public bool BaoGomCaThue { get; set; } = true;
         public List<SanGiaMuaoDich> DanhSachSanGiaoDich { get; } = new List<SanGiaMuaoDich>();
         public SQLiteConnection DBConnection { get; set; } = null;
         private Settings()

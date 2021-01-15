@@ -65,7 +65,7 @@ namespace TradingAssistant
             {
                 return res;
             }
-            res = dt.ToString();
+            res = string.Format("{0}/{1}/{2}",dt.Day, dt.Month, dt.Year);
             return res;
         }
 

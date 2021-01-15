@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradingAssistant
 {
-    class PortfolioItem
+    public class PortfolioItem
     {
         private int _lailo = 0;
         private readonly List<GiaoDichMua> _danhsachGiaoDichMua = null;

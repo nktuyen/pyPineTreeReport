@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradingAssistant
 {
-    class GiaoDichMua
+    public class GiaoDichMua
     {
         public int ID { get; set; } = 0;
         public int CoPhieu { get; set; } = 0;
