@@ -60,6 +60,10 @@
             this.settingsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.tínhLãilỗToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.includedFee = new System.Windows.Forms.ToolStripMenuItem();
+            this.includedTax = new System.Windows.Forms.ToolStripMenuItem();
             this.thiếtLậpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,10 +84,7 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.StatusLabel = new System.Windows.Forms.Label();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.tínhLãilỗToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.includedFee = new System.Windows.Forms.ToolStripMenuItem();
-            this.includedTax = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearImportHistoryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.stockTabPage.SuspendLayout();
             this.portfolioTagPage.SuspendLayout();
@@ -387,6 +388,37 @@
             this.mnuExit.Text = "Thoát";
             this.mnuExit.Click += new System.EventHandler(this.mnuExit_Click);
             // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tínhLãilỗToolStripMenuItem});
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(68, 20);
+            this.toolStripMenuItem2.Text = "&Tùy chọn";
+            // 
+            // tínhLãilỗToolStripMenuItem
+            // 
+            this.tínhLãilỗToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.includedFee,
+            this.includedTax});
+            this.tínhLãilỗToolStripMenuItem.Name = "tínhLãilỗToolStripMenuItem";
+            this.tínhLãilỗToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.tínhLãilỗToolStripMenuItem.Text = "Tính lãi &lỗ";
+            // 
+            // includedFee
+            // 
+            this.includedFee.Name = "includedFee";
+            this.includedFee.Size = new System.Drawing.Size(209, 22);
+            this.includedFee.Text = "Bao gồm cả &phí giao dịch";
+            this.includedFee.Click += new System.EventHandler(this.includedFee_Click);
+            // 
+            // includedTax
+            // 
+            this.includedTax.Name = "includedTax";
+            this.includedTax.Size = new System.Drawing.Size(209, 22);
+            this.includedTax.Text = "Bao gồm cả th&uế";
+            this.includedTax.Click += new System.EventHandler(this.includedTax_Click);
+            // 
             // thiếtLậpToolStripMenuItem
             // 
             this.thiếtLậpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -465,9 +497,10 @@
             // contextMenuStrip3
             // 
             this.contextMenuStrip3.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.importFromExcelMenuItem});
+            this.importFromExcelMenuItem,
+            this.clearImportHistoryMenuItem});
             this.contextMenuStrip3.Name = "contextMenuStrip3";
-            this.contextMenuStrip3.Size = new System.Drawing.Size(224, 26);
+            this.contextMenuStrip3.Size = new System.Drawing.Size(224, 48);
             // 
             // importFromExcelMenuItem
             // 
@@ -543,36 +576,13 @@
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.StatusLabel.Click += new System.EventHandler(this.StatusLabel_Click);
             // 
-            // toolStripMenuItem2
+            // clearImportHistoryMenuItem
             // 
-            this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tínhLãilỗToolStripMenuItem});
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(68, 20);
-            this.toolStripMenuItem2.Text = "&Tùy chọn";
-            // 
-            // tínhLãilỗToolStripMenuItem
-            // 
-            this.tínhLãilỗToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.includedFee,
-            this.includedTax});
-            this.tínhLãilỗToolStripMenuItem.Name = "tínhLãilỗToolStripMenuItem";
-            this.tínhLãilỗToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.tínhLãilỗToolStripMenuItem.Text = "Tính lãi &lỗ";
-            // 
-            // includedFee
-            // 
-            this.includedFee.Name = "includedFee";
-            this.includedFee.Size = new System.Drawing.Size(209, 22);
-            this.includedFee.Text = "Bao gồm cả &phí giao dịch";
-            this.includedFee.Click += new System.EventHandler(this.includedFee_Click);
-            // 
-            // includedTax
-            // 
-            this.includedTax.Name = "includedTax";
-            this.includedTax.Size = new System.Drawing.Size(209, 22);
-            this.includedTax.Text = "Bao gồm cả th&uế";
-            this.includedTax.Click += new System.EventHandler(this.includedTax_Click);
+            this.clearImportHistoryMenuItem.Name = "clearImportHistoryMenuItem";
+            this.clearImportHistoryMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.clearImportHistoryMenuItem.Text = "Xóa lịch sử nhập";
+            this.clearImportHistoryMenuItem.Visible = false;
+            this.clearImportHistoryMenuItem.Click += new System.EventHandler(this.clearImportHistoryMenuItem_Click);
             // 
             // MainForm
             // 
@@ -662,6 +672,7 @@
         private System.Windows.Forms.ToolStripMenuItem tínhLãilỗToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem includedFee;
         private System.Windows.Forms.ToolStripMenuItem includedTax;
+        private System.Windows.Forms.ToolStripMenuItem clearImportHistoryMenuItem;
     }
 }
 

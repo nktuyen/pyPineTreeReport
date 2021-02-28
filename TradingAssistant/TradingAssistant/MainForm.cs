@@ -31,6 +31,7 @@ namespace TradingAssistant
         public int TongTienBan { get; set; } = 0;
         public int TongTienPhiGiaoDich { get; set; } = 0;
         public int TongTienThue { get; set; } = 0;
+        private Dictionary<String, bool> ImportedFiles { get; set; } = new Dictionary<string, bool>();
 
         private Microsoft.Office.Interop.Excel.Application Excel
         {
@@ -545,6 +546,8 @@ namespace TradingAssistant
             {
                 return;
             }
+
+            ImportedFiles.Clear();
             string filePath = dlg.FileName;
             BinaryWriter writer = null;
             try
@@ -615,6 +618,8 @@ namespace TradingAssistant
             {
                 return;
             }
+
+            ImportedFiles.Clear();
             SQLiteConnection conn = new SQLiteConnection(BuildConnectionString(dlg.FileName));
             if (null == conn)
             {
@@ -947,6 +952,11 @@ namespace TradingAssistant
             }
 
             string excelFiles = dlg.FileName;
+            if (ImportedFiles.ContainsKey(excelFiles.ToLower()))
+            {
+                if(MessageBox.Show("Tệp tin này đã được nhập trước đó rồi!\nBạn có muốn tiếp tục nhập không?" , importFromExcelMenuItem.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) != DialogResult.Yes)
+                return;
+            }
             Workbook wb = null;
             try
             {
@@ -958,9 +968,9 @@ namespace TradingAssistant
                 MessageBox.Show(ex.Message, string.Format("Lỗi 0x{0:X8}", ex.HResult), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
             backgroundWorker1.RunWorkerAsync(wb);
-
+            ImportedFiles.Add(excelFiles.ToLower(), true);
+            clearImportHistoryMenuItem.Visible = ImportedFiles.Count > 0;
         }
 
         private void detailMenuItem_Click(object sender, EventArgs e)
@@ -1196,6 +1206,8 @@ namespace TradingAssistant
                     row++;
                 }
             }
+
+            wb.Close();
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -1221,7 +1233,6 @@ namespace TradingAssistant
             progressBar1.Visible = false;
             StatusLabel.Visible = true;
             this.UseWaitCursor = false;
-            Excel.Quit();
             if (ReloadStockListAfterImport)
             {
                 LoadStockList();
@@ -1237,10 +1248,7 @@ namespace TradingAssistant
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (null != Excel)
-            {
-                Excel.Application.Quit();
-            }
+            
         }
 
         private void portfolioListView_SelectedIndexChanged(object sender, EventArgs e)
@@ -1346,6 +1354,16 @@ namespace TradingAssistant
             includedTax.Checked = !includedTax.Checked;
             Settings.BaoGomCaThue = includedTax.Checked;
             tabControl1_SelectedIndexChanged(sender, new EventArgs());
+        }
+
+        private void clearImportHistoryMenuItem_Click(object sender, EventArgs e)
+        {
+            if(MessageBox.Show("Bạn có chắc chắn không?", clearImportHistoryMenuItem.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) != DialogResult.Yes)
+            {
+                return;
+            }
+            ImportedFiles.Clear();
+            clearImportHistoryMenuItem.Visible = ImportedFiles.Count > 0;
         }
     }
 }
